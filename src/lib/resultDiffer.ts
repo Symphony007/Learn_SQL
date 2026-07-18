@@ -1,8 +1,8 @@
 /**
  * Result differ for comparing actual query output against expected output.
  *
- * Performs an order-sensitive comparison (row-by-row, column-by-column) and
- * returns a human-readable diff description when there's a mismatch.
+ * Supports both order-sensitive and order-insensitive comparison.
+ * Returns a human-readable diff description when there's a mismatch.
  */
 
 export interface DiffMatch {
@@ -19,12 +19,14 @@ export type DiffResult = DiffMatch | DiffMismatch;
 /**
  * Compares `actual` rows against `expected` rows.
  *
- * Column order doesn't matter (each row is compared as an object), but row
- * order IS significant — because the prompt explicitly asks for ORDER BY.
+ * Column order doesn't matter (each row is compared as an object).
+ * When `orderSensitive` is true, rows must match in sequence.
+ * When false, both arrays are canonically sorted before comparison.
  */
 export function diffResults(
   actual: Record<string, unknown>[],
   expected: Record<string, unknown>[],
+  orderSensitive: boolean = true,
 ): DiffResult {
   // ── Row count ──────────────────────────────────────────────────────────
   if (actual.length !== expected.length) {
@@ -60,10 +62,14 @@ export function diffResults(
     }
   }
 
-  // ── Row-by-row comparison (order-sensitive) ────────────────────────────
-  for (let i = 0; i < expected.length; i++) {
-    const expRow = expected[i];
-    const actRow = actual[i];
+  // ── Sort if order-insensitive ──────────────────────────────────────────
+  const actualRows = orderSensitive ? actual : canonicalSort(actual);
+  const expectedRows = orderSensitive ? expected : canonicalSort(expected);
+
+  // ── Row-by-row comparison ──────────────────────────────────────────────
+  for (let i = 0; i < expectedRows.length; i++) {
+    const expRow = expectedRows[i];
+    const actRow = actualRows[i];
 
     for (const col of Object.keys(expRow)) {
       const expVal = normalise(expRow[col]);
@@ -82,6 +88,28 @@ export function diffResults(
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Returns a sorted copy of rows, using a canonical string key for each row.
+ * This enables order-insensitive comparison.
+ */
+function canonicalSort(
+  rows: Record<string, unknown>[],
+): Record<string, unknown>[] {
+  return [...rows].sort((a, b) => {
+    const aKey = JSON.stringify(
+      Object.entries(a)
+        .map(([k, v]) => [k, normalise(v)])
+        .sort(([k1], [k2]) => k1.localeCompare(k2)),
+    );
+    const bKey = JSON.stringify(
+      Object.entries(b)
+        .map(([k, v]) => [k, normalise(v)])
+        .sort(([k1], [k2]) => k1.localeCompare(k2)),
+    );
+    return aKey.localeCompare(bKey);
+  });
+}
 
 /**
  * Normalises a cell value so comparisons are type-agnostic.

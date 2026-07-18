@@ -1,0 +1,63 @@
+{
+  "topic_id": "group-by",
+  "title": "Aggregation with GROUP BY",
+  "order": 2,
+  "theory": {
+    "concept": "GROUP BY collapses multiple rows that share a common value into a single summary row. On its own, GROUP BY isn't very useful — its power comes from pairing it with aggregate functions like COUNT(), SUM(), AVG(), MIN(), and MAX(). These functions compute a single value from a group of rows. For example, if you have 10 sales rows and you GROUP BY product, you end up with one row per product, and you can use SUM(amount) to get the total sales for each product.",
+    "syntax": "SELECT column, AGGREGATE_FUNCTION(column) AS alias\nFROM table_name\nGROUP BY column\nORDER BY alias;\n\nEvery column in your SELECT must either appear in the GROUP BY clause or be wrapped in an aggregate function. The AS keyword lets you name the computed column (e.g., COUNT(*) AS sale_count). You can GROUP BY multiple columns to create finer-grained groups — GROUP BY product, region gives you one row per unique product-region combination.",
+    "example": {
+      "query": "SELECT product, COUNT(*) AS sale_count\nFROM Sales\nGROUP BY product;",
+      "explanation": "This groups all rows in the Sales table by the product column. For each unique product, COUNT(*) counts how many rows belong to that group. The result has one row per product with the product name and its sale count. AS sale_count gives the count column a readable name."
+    },
+    "common_mistakes": [
+      "Selecting a column that isn't in GROUP BY or an aggregate: SELECT name, department, COUNT(*) FROM Employees GROUP BY department will error in strict SQL because 'name' isn't grouped or aggregated — the database doesn't know which name to show for each department group.",
+      "Using WHERE to filter on aggregate results: WHERE COUNT(*) > 5 doesn't work because WHERE filters individual rows before grouping. Use HAVING instead: HAVING COUNT(*) > 5 filters groups after aggregation.",
+      "Forgetting to alias aggregate columns: Without AS, the result column will be named something like COUNT(*) which makes it harder to reference and compare. Always alias: COUNT(*) AS sale_count."
+    ]
+  },
+  "shared_table": {
+    "name": "Sales",
+    "create_sql": "CREATE TABLE Sales (\n  id INTEGER PRIMARY KEY,\n  product TEXT NOT NULL,\n  region TEXT NOT NULL,\n  amount INTEGER NOT NULL\n);",
+    "insert_sql": "INSERT INTO Sales (id, product, region, amount) VALUES\n  (1, 'Widget', 'North', 150),\n  (2, 'Gadget', 'South', 230),\n  (3, 'Widget', 'South', 180),\n  (4, 'Gadget', 'North', 210),\n  (5, 'Widget', 'North', 120),\n  (6, 'Doohickey', 'South', 340),\n  (7, 'Gadget', 'North', 190),\n  (8, 'Widget', 'South', 160),\n  (9, 'Doohickey', 'North', 280),\n  (10, 'Gadget', 'South', 250);",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "product", "type": "TEXT" },
+      { "name": "region", "type": "TEXT" },
+      { "name": "amount", "type": "INTEGER" }
+    ]
+  },
+  "questions": [
+    {
+      "id": "groupby-1-count",
+      "prompt": "Count the number of sales for each product. Return columns named 'product' and 'sale_count'.",
+      "expected_result": [
+        { "product": "Doohickey", "sale_count": 2 },
+        { "product": "Gadget", "sale_count": 4 },
+        { "product": "Widget", "sale_count": 4 }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "groupby-2-sum-order",
+      "prompt": "Find the total sales amount for each region, ordered by total amount descending. Return columns named 'region' and 'total_amount'.",
+      "expected_result": [
+        { "region": "South", "total_amount": 1160 },
+        { "region": "North", "total_amount": 950 }
+      ],
+      "order_sensitive": true
+    },
+    {
+      "id": "groupby-3-multi-column",
+      "prompt": "Count the number of sales for each combination of product and region. Return columns named 'product', 'region', and 'sale_count'.",
+      "expected_result": [
+        { "product": "Doohickey", "region": "North", "sale_count": 1 },
+        { "product": "Doohickey", "region": "South", "sale_count": 1 },
+        { "product": "Gadget", "region": "North", "sale_count": 2 },
+        { "product": "Gadget", "region": "South", "sale_count": 2 },
+        { "product": "Widget", "region": "North", "sale_count": 2 },
+        { "product": "Widget", "region": "South", "sale_count": 2 }
+      ],
+      "order_sensitive": false
+    }
+  ]
+}
