@@ -1,0 +1,71 @@
+{
+  "topic_id": "intro-to-tables",
+  "title": "Introduction to Tables & SELECT",
+  "order": 1,
+  "theory": {
+    "concept": "A table stores data in rows and columns, like a spreadsheet — SELECT is how you ask the database to hand some of that data back to you.\n• SELECT * returns every column; naming specific columns returns only those, in the order you list them\n• The columns come back in the exact order you write them in the SELECT list — not the table's original order\n• Every SELECT needs a FROM clause telling it which table to read from\n• Without any filtering, SELECT returns every row in the table",
+    "syntax": "SELECT * FROM table_name;\n\nSELECT column1, column2 FROM table_name;",
+    "example": {
+      "query": "-- Selecting everything\nSELECT * FROM Students;\n\n-- Selecting specific columns\nSELECT name, marks FROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "create_sql": "CREATE TABLE Students (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, city TEXT, marks INTEGER);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES (1, 'Aditya', 21, 'Kolkata', 78), (2, 'Priya', 22, 'Delhi', 85), (3, 'Rohan', 20, 'Mumbai', 62), (4, 'Sneha', 23, 'Kolkata', 91), (5, 'Karan', 21, 'Bangalore', 55), (6, 'Anjali', 22, 'Delhi', 73), (7, 'Vikram', 20, 'Chennai', 88), (8, 'Meera', 23, 'Mumbai', 67);",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ]
+  },
+  "questions": [
+    {
+      "id": "select-1",
+      "prompt": "Select only the city of every student.",
+      "expected_result": [
+        { "city": "Kolkata" },
+        { "city": "Delhi" },
+        { "city": "Mumbai" },
+        { "city": "Kolkata" },
+        { "city": "Bangalore" },
+        { "city": "Delhi" },
+        { "city": "Chennai" },
+        { "city": "Mumbai" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "select-2",
+      "prompt": "Select the name and city of every student.",
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata" },
+        { "name": "Priya", "city": "Delhi" },
+        { "name": "Rohan", "city": "Mumbai" },
+        { "name": "Sneha", "city": "Kolkata" },
+        { "name": "Karan", "city": "Bangalore" },
+        { "name": "Anjali", "city": "Delhi" },
+        { "name": "Vikram", "city": "Chennai" },
+        { "name": "Meera", "city": "Mumbai" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "select-3",
+      "prompt": "Select every column, but list age before name (age, name, id, city, marks).",
+      "expected_result": [
+        { "age": 21, "name": "Aditya", "id": 1, "city": "Kolkata", "marks": 78 },
+        { "age": 22, "name": "Priya", "id": 2, "city": "Delhi", "marks": 85 },
+        { "age": 20, "name": "Rohan", "id": 3, "city": "Mumbai", "marks": 62 },
+        { "age": 23, "name": "Sneha", "id": 4, "city": "Kolkata", "marks": 91 },
+        { "age": 21, "name": "Karan", "id": 5, "city": "Bangalore", "marks": 55 },
+        { "age": 22, "name": "Anjali", "id": 6, "city": "Delhi", "marks": 73 },
+        { "age": 20, "name": "Vikram", "id": 7, "city": "Chennai", "marks": 88 },
+        { "age": 23, "name": "Meera", "id": 8, "city": "Mumbai", "marks": 67 }
+      ],
+      "order_sensitive": false
+    }
+  ]
+}
