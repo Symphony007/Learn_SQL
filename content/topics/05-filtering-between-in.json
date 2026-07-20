@@ -1,0 +1,58 @@
+{
+  "topic_id": "filtering-between-in",
+  "title": "Filtering with BETWEEN & IN",
+  "order": 5,
+  "theory": {
+    "concept": "BETWEEN and IN are shortcuts for conditions you could technically write with AND/OR, but they read cleaner and are less error-prone.\n• BETWEEN a AND b is inclusive on both ends — it matches values equal to a or b too, not just values strictly in between\n• IN (val1, val2, ...) matches if the column equals any value in the list — shorthand for a chain of OR comparisons\n• Both work on numbers, text, and dates\n• NOT BETWEEN and NOT IN invert the match, same idea as NOT LIKE from the last topic\n• Careful with NOT IN when the list or column can contain NULL — if any value being compared is NULL, the whole NOT IN can silently return no rows at all (an important gotcha to remember once you get to subqueries later)",
+    "syntax": "SELECT * FROM table_name WHERE column_name BETWEEN value1 AND value2;\n\nSELECT * FROM table_name WHERE column_name IN (value1, value2, value3);",
+    "example": {
+      "query": "-- BETWEEN on a numeric range\nSELECT name, marks FROM Students WHERE marks BETWEEN 60 AND 80;\n\n-- IN with a list, combined with IS NOT NULL from Topic 3\nSELECT name, city FROM Students WHERE city IN ('Delhi', 'Chennai') AND marks IS NOT NULL;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "create_sql": "CREATE TABLE Students (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, city TEXT, marks INTEGER);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES (1, 'Aditya', 21, 'Kolkata', 78), (2, 'Priya', 22, NULL, 85), (3, 'Rohan', 20, 'Mumbai', NULL), (4, 'Sneha', 23, 'Kolkata', 91), (5, 'Karan', 21, NULL, 55), (6, 'Anjali', 22, 'Delhi', NULL), (7, 'Vikram', 20, 'Chennai', 88), (8, 'Meera', 23, 'Mumbai', 67);",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ]
+  },
+  "questions": [
+    {
+      "id": "between-in-1",
+      "prompt": "Select the names of students whose age is between 20 and 21 (inclusive).",
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Rohan" },
+        { "name": "Karan" },
+        { "name": "Vikram" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "between-in-2",
+      "prompt": "Select the names of students who live in 'Kolkata', 'Mumbai', or 'Bangalore'.",
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Rohan" },
+        { "name": "Sneha" },
+        { "name": "Meera" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "between-in-3",
+      "prompt": "Select the name and marks of students NOT in the age range 21 to 22, whose marks are recorded.",
+      "expected_result": [
+        { "name": "Sneha", "marks": 91 },
+        { "name": "Vikram", "marks": 88 },
+        { "name": "Meera", "marks": 67 }
+      ],
+      "order_sensitive": false
+    }
+  ]
+}

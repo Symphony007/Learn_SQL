@@ -1,0 +1,70 @@
+{
+  "topic_id": "working-with-nulls",
+  "title": "Working with NULL Values",
+  "order": 3,
+  "theory": {
+    "concept": "NULL means \"no value\" — it's not zero, not an empty string, and not the word \"null.\" It represents missing or unknown data.\n• You can't use = NULL or != NULL to check for it — NULL isn't equal to anything, not even itself. Use IS NULL or IS NOT NULL instead\n• Any arithmetic or comparison involving NULL returns NULL (unknown), not true or false — this is why = NULL silently returns nothing instead of erroring\n• NULL can appear in any column type — numbers, text, dates — it just means that particular cell has no data\n• Aggregate functions like COUNT, SUM, AVG generally skip NULLs rather than treating them as zero (covered properly in the Aggregate Functions topic — just know for now that NULL doesn't behave like 0)",
+    "syntax": "SELECT * FROM table_name WHERE column_name IS NULL;\n\nSELECT * FROM table_name WHERE column_name IS NOT NULL;",
+    "example": {
+      "query": "-- Finding rows with a missing value\nSELECT name FROM Students WHERE city IS NULL;\n\n-- Finding rows where a value IS present, combined with WHERE\nSELECT name, marks FROM Students WHERE city IS NOT NULL AND marks > 70;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "create_sql": "CREATE TABLE Students (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, city TEXT, marks INTEGER);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES (1, 'Aditya', 21, 'Kolkata', 78), (2, 'Priya', 22, NULL, 85), (3, 'Rohan', 20, 'Mumbai', NULL), (4, 'Sneha', 23, 'Kolkata', 91), (5, 'Karan', 21, NULL, 55), (6, 'Anjali', 22, 'Delhi', NULL), (7, 'Vikram', 20, 'Chennai', 88), (8, 'Meera', 23, 'Mumbai', 67);",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ]
+  },
+  "questions": [
+    {
+      "id": "nulls-1",
+      "prompt": "Select the names of students whose marks are missing.",
+      "expected_result": [
+        { "name": "Rohan" },
+        { "name": "Anjali" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "nulls-2",
+      "prompt": "Select the names of students whose city IS recorded (not missing).",
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Rohan" },
+        { "name": "Sneha" },
+        { "name": "Anjali" },
+        { "name": "Vikram" },
+        { "name": "Meera" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "nulls-3",
+      "prompt": "Select the name and city of students who have a recorded city AND scored above 60 marks.",
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata" },
+        { "name": "Sneha", "city": "Kolkata" },
+        { "name": "Vikram", "city": "Chennai" },
+        { "name": "Meera", "city": "Mumbai" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "nulls-4",
+      "prompt": "Select the names of students whose city is missing, OR whose marks are missing.",
+      "expected_result": [
+        { "name": "Priya" },
+        { "name": "Rohan" },
+        { "name": "Karan" },
+        { "name": "Anjali" }
+      ],
+      "order_sensitive": false
+    }
+  ]
+}

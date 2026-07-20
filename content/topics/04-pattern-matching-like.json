@@ -1,0 +1,68 @@
+{
+  "topic_id": "pattern-matching-like",
+  "title": "Pattern Matching with LIKE",
+  "order": 4,
+  "theory": {
+    "concept": "LIKE lets you match text against a pattern instead of an exact value — useful when you know part of a value but not the whole thing.\n• % matches any sequence of characters (including none) — 'K%' matches anything starting with K\n• _ matches exactly one character — 'K_l' matches a 3-letter word starting with K, ending in l\n• LIKE is case-insensitive in SQLite by default for standard ASCII text\n• Combine with NOT to exclude a pattern: NOT LIKE\n• Works alongside everything you already know — AND, OR, IS NULL — LIKE is just another condition in WHERE",
+    "syntax": "SELECT * FROM table_name WHERE column_name LIKE 'pattern';\n\nSELECT * FROM table_name WHERE column_name NOT LIKE 'pattern';",
+    "example": {
+      "query": "-- Matching a prefix\nSELECT name FROM Students WHERE name LIKE 'A%';\n\n-- Matching a pattern combined with NOT and a NULL-safe condition\nSELECT name, city FROM Students WHERE city NOT LIKE 'M%' AND city IS NOT NULL;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "create_sql": "CREATE TABLE Students (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, city TEXT, marks INTEGER);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES (1, 'Aditya', 21, 'Kolkata', 78), (2, 'Priya', 22, NULL, 85), (3, 'Rohan', 20, 'Mumbai', NULL), (4, 'Sneha', 23, 'Kolkata', 91), (5, 'Karan', 21, NULL, 55), (6, 'Anjali', 22, 'Delhi', NULL), (7, 'Vikram', 20, 'Chennai', 88), (8, 'Meera', 23, 'Mumbai', 67);",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ]
+  },
+  "questions": [
+    {
+      "id": "like-1",
+      "prompt": "Select the names of students whose name ends with 'a'.",
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Priya" },
+        { "name": "Sneha" },
+        { "name": "Meera" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "like-2",
+      "prompt": "Select the names of students whose name contains exactly 6 characters, using underscore matching.",
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Anjali" },
+        { "name": "Vikram" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "like-3",
+      "prompt": "Select the name and city of students whose city starts with 'K' or 'C'.",
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata" },
+        { "name": "Sneha", "city": "Kolkata" },
+        { "name": "Vikram", "city": "Chennai" }
+      ],
+      "order_sensitive": false
+    },
+    {
+      "id": "like-4",
+      "prompt": "Select the names of students whose name does NOT start with 'S' or 'V', and whose marks are recorded (not missing).",
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Priya" },
+        { "name": "Karan" },
+        { "name": "Meera" }
+      ],
+      "order_sensitive": false
+    }
+  ]
+}
