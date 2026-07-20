@@ -1,0 +1,59 @@
+{
+  "topic_id": "distinct",
+  "title": "Removing Duplicate Rows with DISTINCT",
+  "order": 6,
+  "theory": {
+    "concept": "DISTINCT removes duplicate rows from your result set, keeping only unique combinations of the selected columns.\n\n- Applies to the full row of selected columns together, not each column separately — if two rows match on every selected column, only one is kept.\n- Selecting more columns makes duplicates less likely, since more values have to match exactly for two rows to count as the same.\n- SELECT DISTINCT * checks every column in the table for uniqueness; SELECT DISTINCT column_name only checks that one column.",
+    "syntax": "SELECT DISTINCT column1, column2 FROM table_name;",
+    "example": {
+      "query": "-- 1. Distinct on a single column\nSELECT DISTINCT city FROM Students;\n\n-- 2. Distinct across multiple columns\nSELECT DISTINCT age, city FROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "distinct_ages",
+      "prompt": "Select the distinct list of ages present among students.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "age": 21 },
+        { "age": 22 },
+        { "age": 23 },
+        { "age": 20 }
+      ]
+    },
+    {
+      "id": "distinct_age_city",
+      "prompt": "Select the distinct combinations of age and city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "age": 21, "city": "Kolkata" },
+        { "age": 22, "city": "Delhi" },
+        { "age": 23, "city": "Kolkata" },
+        { "age": 21, "city": "Bangalore" },
+        { "age": 20, "city": "Chennai" }
+      ]
+    },
+    {
+      "id": "distinct_city_marks",
+      "prompt": "Select the distinct cities of students whose marks are above 60.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Kolkata" },
+        { "city": "Delhi" },
+        { "city": "Chennai" }
+      ]
+    }
+  ]
+}

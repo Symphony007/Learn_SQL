@@ -1,0 +1,58 @@
+{
+  "topic_id": "aggregate-functions",
+  "title": "Summarizing Data with Aggregate Functions",
+  "order": 9,
+  "theory": {
+    "concept": "Aggregate functions compute a single value from a set of rows — instead of returning each row, they summarize them.\n\n- COUNT(*) counts rows; COUNT(column) counts only non-NULL values in that column\n- SUM, AVG, MIN, MAX operate on numeric columns\n- Aggregate functions ignore NULL values, except COUNT(*) which counts every row regardless\n- Used alone without GROUP BY, they summarize the entire table into a single row of output",
+    "syntax": "SELECT COUNT(*) FROM table_name;\n\nSELECT SUM(column_name), AVG(column_name), MIN(column_name), MAX(column_name) FROM table_name;",
+    "example": {
+      "query": "-- 1. Count and total\nSELECT COUNT(*), SUM(marks) FROM Students;\n\n-- 2. Average and range with a filter\nSELECT AVG(marks), MIN(marks), MAX(marks) FROM Students WHERE city = 'Delhi';"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "count_all",
+      "prompt": "Count how many students are in the table.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "COUNT(*)": 8 }
+      ]
+    },
+    {
+      "id": "avg_age",
+      "prompt": "Find the average age of all students.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "AVG(age)": 21.5 }
+      ]
+    },
+    {
+      "id": "max_min_marks_filtered",
+      "prompt": "Find the highest and lowest marks among students from Kolkata.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "MAX(marks)": 91, "MIN(marks)": 62 }
+      ]
+    },
+    {
+      "id": "count_filtered",
+      "prompt": "Count how many students scored above 70 marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "COUNT(*)": 5 }
+      ]
+    }
+  ]
+}

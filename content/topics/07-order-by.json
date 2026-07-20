@@ -1,0 +1,70 @@
+{
+  "topic_id": "order-by",
+  "title": "Sorting Results with ORDER BY",
+  "order": 7,
+  "theory": {
+    "concept": "ORDER BY sorts your result set by one or more columns — it only reorders rows, it doesn't add or remove any.\n\n- Default order is ascending (smallest to largest, A to Z) — use DESC for descending\n- Sort by multiple columns: the second column breaks ties in the first\n- Runs after WHERE filters the rows, so you can combine both freely\n- Works the same with SELECT * or specific columns",
+    "syntax": "SELECT column1, column2 FROM table_name ORDER BY column1 DESC;\n\nSELECT column1, column2 FROM table_name ORDER BY column1, column2 DESC;",
+    "example": {
+      "query": "-- 1. Single column, descending\nSELECT name, marks FROM Students ORDER BY marks DESC;\n\n-- 2. Multiple columns\nSELECT name, city, marks FROM Students ORDER BY city, marks DESC;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "order_by_age",
+      "prompt": "Select name and age, sorted by age ascending.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Vikram", "age": 20 },
+        { "name": "Aditya", "age": 21 },
+        { "name": "Rohan", "age": 21 },
+        { "name": "Karan", "age": 21 },
+        { "name": "Priya", "age": 22 },
+        { "name": "Anjali", "age": 22 },
+        { "name": "Meera", "age": 22 },
+        { "name": "Sneha", "age": 23 }
+      ]
+    },
+    {
+      "id": "order_by_marks_desc_with_where",
+      "prompt": "Select the name and marks of students who scored above 60, sorted by marks descending.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Sneha", "marks": 91 },
+        { "name": "Vikram", "marks": 88 },
+        { "name": "Priya", "marks": 85 },
+        { "name": "Aditya", "marks": 78 },
+        { "name": "Anjali", "marks": 73 },
+        { "name": "Meera", "marks": 67 },
+        { "name": "Rohan", "marks": 62 }
+      ]
+    },
+    {
+      "id": "order_by_multiple_columns",
+      "prompt": "Select name, city, and marks, sorted by city ascending, then marks ascending within each city.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Karan", "city": "Bangalore", "marks": 55 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88 },
+        { "name": "Meera", "city": "Delhi", "marks": 67 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73 },
+        { "name": "Priya", "city": "Delhi", "marks": 85 },
+        { "name": "Rohan", "city": "Kolkata", "marks": 62 },
+        { "name": "Aditya", "city": "Kolkata", "marks": 78 },
+        { "name": "Sneha", "city": "Kolkata", "marks": 91 }
+      ]
+    }
+  ]
+}

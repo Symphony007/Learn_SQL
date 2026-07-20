@@ -1,0 +1,71 @@
+{
+  "topic_id": "group-by",
+  "title": "Grouping Rows with GROUP BY",
+  "order": 10,
+  "theory": {
+    "concept": "GROUP BY collapses rows that share the same value in a column into a single group, so aggregate functions compute per group instead of over the whole table.\n\n- Every column in SELECT that isn't inside an aggregate function must appear in GROUP BY\n- Groups form before aggregates run — COUNT/SUM/AVG then compute one value per group\n- Group by multiple columns to form a group for every unique combination\n- Runs after WHERE filters rows, but before ORDER BY sorts the final output",
+    "syntax": "SELECT column1, AGG_FUNC(column2) FROM table_name GROUP BY column1;",
+    "example": {
+      "query": "-- 1. Count per group\nSELECT city, COUNT(*) FROM Students GROUP BY city;\n\n-- 2. Aggregate per group with a filter applied first\nSELECT city, AVG(marks) FROM Students WHERE age >= 21 GROUP BY city;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "group_by_city_count",
+      "prompt": "Find the number of students in each city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Bangalore", "COUNT(*)": 1 },
+        { "city": "Chennai", "COUNT(*)": 1 },
+        { "city": "Delhi", "COUNT(*)": 3 },
+        { "city": "Kolkata", "COUNT(*)": 3 }
+      ]
+    },
+    {
+      "id": "group_by_city_sum",
+      "prompt": "Find the total marks scored by students in each city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Bangalore", "SUM(marks)": 55 },
+        { "city": "Chennai", "SUM(marks)": 88 },
+        { "city": "Delhi", "SUM(marks)": 225 },
+        { "city": "Kolkata", "SUM(marks)": 231 }
+      ]
+    },
+    {
+      "id": "group_by_city_max",
+      "prompt": "Find the maximum marks scored in each city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Bangalore", "MAX(marks)": 55 },
+        { "city": "Chennai", "MAX(marks)": 88 },
+        { "city": "Delhi", "MAX(marks)": 85 },
+        { "city": "Kolkata", "MAX(marks)": 91 }
+      ]
+    },
+    {
+      "id": "group_by_city_age_count",
+      "prompt": "Find the number of students grouped by both city and age.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Bangalore", "age": 21, "COUNT(*)": 1 },
+        { "city": "Chennai", "age": 20, "COUNT(*)": 1 },
+        { "city": "Delhi", "age": 22, "COUNT(*)": 3 },
+        { "city": "Kolkata", "age": 21, "COUNT(*)": 2 },
+        { "city": "Kolkata", "age": 23, "COUNT(*)": 1 }
+      ]
+    }
+  ]
+}

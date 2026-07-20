@@ -1,0 +1,53 @@
+{
+  "topic_id": "limit-offset",
+  "title": "Limiting Results with LIMIT & OFFSET",
+  "order": 8,
+  "theory": {
+    "concept": "LIMIT restricts how many rows come back; OFFSET skips a number of rows before returning results — together they let you page through data.\n\n- LIMIT n returns at most n rows\n- OFFSET m skips the first m rows, then LIMIT applies after that\n- Always pair with ORDER BY — without a defined order, which rows come back first isn't guaranteed\n- Common pattern for pagination: LIMIT page_size OFFSET (page_number - 1) * page_size",
+    "syntax": "SELECT column1, column2 FROM table_name ORDER BY column1 LIMIT n;\n\nSELECT column1, column2 FROM table_name ORDER BY column1 LIMIT n OFFSET m;",
+    "example": {
+      "query": "-- 1. Top N rows\nSELECT name, marks FROM Students ORDER BY marks DESC LIMIT 3;\n\n-- 2. Skipping rows with OFFSET\nSELECT name, marks FROM Students ORDER BY marks DESC LIMIT 3 OFFSET 3;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "limit_2",
+      "prompt": "Select the name and age of the 2 youngest students.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Vikram", "age": 20 },
+        { "name": "Aditya", "age": 21 }
+      ]
+    },
+    {
+      "id": "limit_offset_4th",
+      "prompt": "Select the name and marks of the student with the 4th highest marks.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Aditya", "marks": 78 }
+      ]
+    },
+    {
+      "id": "limit_offset_5th_to_7th",
+      "prompt": "Select the name and marks of students ranked 5th to 7th by marks descending.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Anjali", "marks": 73 },
+        { "name": "Meera", "marks": 67 },
+        { "name": "Rohan", "marks": 62 }
+      ]
+    }
+  ]
+}
