@@ -7,6 +7,8 @@ import { createDatabase, runQuery, QueryResult } from "@/lib/sqlEngine";
 import { formatSqlError } from "@/lib/errorFormatter";
 import { diffResults, DiffResult } from "@/lib/resultDiffer";
 import Editor, { useMonaco } from "@monaco-editor/react";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/lib/supabaseClient";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Props
@@ -15,13 +17,15 @@ import Editor, { useMonaco } from "@monaco-editor/react";
 interface PracticeScreenProps {
   question: Question;
   tables: TableFixture[];
+  onSolve?: () => void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Component
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default function PracticeScreen({ question, tables }: PracticeScreenProps) {
+export default function PracticeScreen({ question, tables, onSolve }: PracticeScreenProps) {
+  const { user } = useAuth();
   const dbRef = useRef<Database | null>(null);
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
@@ -93,9 +97,30 @@ export default function PracticeScreen({ question, tables }: PracticeScreenProps
       try {
         const res = runQuery(dbRef.current!, queryText);
         setResult(res);
-        setDiff(
-          diffResults(res.rows, question.expected_result, question.order_sensitive),
-        );
+        
+        const diffRes = diffResults(res.rows, question.expected_result, question.order_sensitive);
+        setDiff(diffRes);
+
+        if (diffRes.match) {
+          if (user) {
+            // Logged in: Save progress silently
+            supabase.from("progress").upsert({
+              user_id: user.id,
+              question_id: question.id,
+              solved: true,
+            }).then(({ error }) => {
+              if (error) {
+                console.error("Failed to save progress", error);
+              } else if (onSolve) {
+                onSolve();
+              }
+            });
+          } else {
+            // Not logged in: we still trigger onSolve to update local UI if desired
+            // But we don't save to supabase.
+            if (onSolve) onSolve();
+          }
+        }
       } catch (err) {
         const formatted = formatSqlError(err, knownTableNames, knownColumnNames);
         setError(formatted.message);
@@ -379,18 +404,25 @@ export default function PracticeScreen({ question, tables }: PracticeScreenProps
             <div className="flex flex-col gap-4">
               {/* Correct badge or diff reason */}
               {diff && diff.match && (
-                <div className="flex items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 px-5 py-3 shadow-sm">
-                  <div className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">
-                    ✓
+                <div className="flex items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 px-5 py-3 shadow-sm justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">
+                      ✓
+                    </div>
+                    <div>
+                      <span className="text-teal-800 font-semibold text-sm block">
+                        Correct!
+                      </span>
+                      <span className="text-teal-600 text-xs block mt-0.5">
+                        Output matches expected result.
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-teal-800 font-semibold text-sm block">
-                      Correct!
+                  {!user && (
+                    <span className="text-xs text-slate-500 italic">
+                      Log in to save your progress
                     </span>
-                    <span className="text-teal-600 text-xs block mt-0.5">
-                      Output matches expected result.
-                    </span>
-                  </div>
+                  )}
                 </div>
               )}
               {diff && !diff.match && (

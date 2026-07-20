@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Topic, TableFixture } from "@/lib/types";
 import PracticeScreen from "@/components/PracticeScreen";
+import Header from "@/components/Header";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/lib/supabaseClient";
 
 interface TopicPageClientProps {
   topic: Topic;
@@ -22,30 +25,45 @@ function getTablesForQuestion(topic: Topic, questionIndex: number): TableFixture
 
 export default function TopicPageClient({ topic }: TopicPageClientProps) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const { user } = useAuth();
+  const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    async function fetchProgress() {
+      if (!user) {
+        setSolvedIds(new Set());
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("progress")
+        .select("question_id")
+        .eq("user_id", user.id)
+        .eq("solved", true);
+
+      if (error) {
+        console.error("Failed to fetch progress", error);
+        return;
+      }
+
+      const solved = new Set(data.map(d => d.question_id));
+      setSolvedIds(solved);
+    }
+
+    fetchProgress();
+  }, [user]);
+
+  const handleSolve = (questionId: string) => {
+    setSolvedIds((prev) => {
+      const next = new Set(prev);
+      next.add(questionId);
+      return next;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 flex flex-col">
-      {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                SQL
-              </div>
-              <span className="font-semibold tracking-tight text-slate-900">Practice Platform</span>
-            </Link>
-          </div>
-          <nav>
-            <Link 
-              href="/roadmap"
-              className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors"
-            >
-              Curriculum
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10 md:py-16 flex flex-col gap-12">
         
@@ -121,6 +139,7 @@ export default function TopicPageClient({ topic }: TopicPageClientProps) {
           <div className="flex flex-col gap-4">
             {topic.questions.map((q, i) => {
               const isSelected = selectedIdx === i;
+              const isSolved = solvedIds.has(q.id);
               const tablesForQuestion = isSelected ? getTablesForQuestion(topic, i) : [];
 
               return (
@@ -135,10 +154,20 @@ export default function TopicPageClient({ topic }: TopicPageClientProps) {
                     }`}
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 font-bold text-sm ${
-                        isSelected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 font-bold text-sm transition-colors ${
+                        isSolved 
+                          ? "bg-green-500 text-white" 
+                          : isSelected 
+                            ? "bg-indigo-600 text-white" 
+                            : "bg-slate-100 text-slate-500"
                       }`}>
-                        {i + 1}
+                        {isSolved ? (
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          i + 1
+                        )}
                       </div>
                       <span className="text-lg font-medium text-slate-800 leading-relaxed mt-0.5">
                         {q.prompt}
@@ -153,6 +182,7 @@ export default function TopicPageClient({ topic }: TopicPageClientProps) {
                         key={q.id}
                         question={q}
                         tables={tablesForQuestion}
+                        onSolve={() => handleSolve(q.id)}
                       />
                     </div>
                   )}
