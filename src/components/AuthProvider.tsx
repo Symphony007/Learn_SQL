@@ -38,6 +38,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Globally suppress Monaco Editor cancellation promise rejections
+  // These occur when PracticeScreen unmounts and Monaco cancels pending tasks.
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      if (event.reason && typeof event.reason === 'object' && event.reason.type === 'cancelation') {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("unhandledrejection", handler);
+    return () => window.removeEventListener("unhandledrejection", handler);
+  }, []);
+
+
   return (
     <AuthContext.Provider value={{ user, session, loading }}>
       {children}
