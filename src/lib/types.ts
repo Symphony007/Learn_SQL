@@ -1,5 +1,5 @@
 /**
- * Core content model types for the SQL Practice Platform.
+ * Core content model types for QueryLab.
  */
 
 export interface TableFixture {

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SQL Practice Platform",
+  title: "QueryLab",
   description: "Client-side SQL query runner for learning SQL",
 };
 

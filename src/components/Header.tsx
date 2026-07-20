@@ -29,9 +29,9 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                SQL
+                QL
               </div>
-              <span className="font-semibold tracking-tight text-slate-900">Practice Platform</span>
+              <span className="font-semibold tracking-tight text-slate-900">QueryLab</span>
             </Link>
           </div>
           <nav className="flex items-center gap-6">
