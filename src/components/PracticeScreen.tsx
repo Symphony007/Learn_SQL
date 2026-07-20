@@ -39,6 +39,19 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
   const monaco = useMonaco();
   const [editorInstance, setEditorInstance] = useState<any>(null);
 
+  // Suppress Monaco Editor cancellation promise rejections
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      // Monaco throws non-Error objects like { type: "cancelation", msg: "operation is manually canceled" }
+      // which crashes Next.js's coerceError overlay. We suppress them here.
+      if (event.reason && typeof event.reason === 'object' && event.reason.type === 'cancelation') {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("unhandledrejection", handler);
+    return () => window.removeEventListener("unhandledrejection", handler);
+  }, []);
+
   // Derive known names from the fixture tables for error formatting
   const knownTableNames = tables.map((t) => t.name);
   const knownColumnNames = tables.flatMap((t) => t.columns.map((c) => c.name));
