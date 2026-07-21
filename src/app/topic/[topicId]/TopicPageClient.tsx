@@ -18,7 +18,7 @@ function getTablesForQuestion(topic: Topic, questionIndex: number): TableFixture
     return question.fixture.tables;
   }
   if (topic.shared_table) {
-    return [topic.shared_table];
+    return Array.isArray(topic.shared_table) ? topic.shared_table : [topic.shared_table];
   }
   return [];
 }

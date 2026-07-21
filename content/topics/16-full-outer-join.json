@@ -1,0 +1,74 @@
+{
+  "topic_id": "full-outer-join",
+  "title": "FULL OUTER JOIN (emulated)",
+  "order": 16,
+  "theory": {
+    "concept": "FULL OUTER JOIN returns every row from both tables — matched rows combine normally, and unmatched rows from either side still appear, with NULLs filling in for the missing side.\n\n- SQLite doesn't support FULL OUTER JOIN directly (many real-world engines don't, or support it inconsistently), so it has to be built manually\n- The standard workaround: take a LEFT JOIN, take a RIGHT JOIN (or the mirrored LEFT JOIN with tables swapped), and combine them with UNION — UNION automatically removes exact duplicate rows, which is exactly what you want since the matched rows would otherwise appear twice\n- This is a genuinely important pattern to recognize — if an interviewer asks for a FULL OUTER JOIN and you're on an engine without it, this emulation is the expected answer\n- The result includes: matched rows (once), left-only rows (with right side NULL), and right-only rows (with left side NULL)",
+    "syntax": "SELECT columns FROM table1 LEFT JOIN table2 ON table1.column = table2.column\nUNION\nSELECT columns FROM table1 RIGHT JOIN table2 ON table1.column = table2.column;\n\n(On engines without RIGHT JOIN either, like SQLite, the second half is written as a LEFT JOIN with the table order swapped instead.)",
+    "example": {
+      "query": "-- 1. Full outer join emulation showing all students and all enrollments\nSELECT s.name, e.course FROM Students AS s LEFT JOIN Enrollments AS e ON s.id = e.student_id\nUNION\nSELECT s.name, e.course FROM Enrollments AS e LEFT JOIN Students AS s ON s.id = e.student_id;"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" },
+        { "name": "age", "type": "INTEGER" },
+        { "name": "city", "type": "TEXT" },
+        { "name": "marks", "type": "INTEGER" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+      "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+    },
+    {
+      "name": "Enrollments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "student_id", "type": "INTEGER" },
+        { "name": "course", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Enrollments (\n  id INTEGER PRIMARY KEY,\n  student_id INTEGER,\n  course TEXT\n);",
+      "insert_sql": "INSERT INTO Enrollments (id, student_id, course) VALUES\n(1, 1, 'DBMS'),\n(2, 1, 'Networks'),\n(3, 2, 'DBMS'),\n(4, 4, 'OS'),\n(5, 5, 'DBMS'),\n(6, 7, 'Networks'),\n(7, 9, 'DBMS');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "full_outer_all",
+      "prompt": "List the name and course for every student and every enrollment, showing NULL where there's no match on either side.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course": "DBMS" },
+        { "name": "Aditya", "course": "Networks" },
+        { "name": "Priya", "course": "DBMS" },
+        { "name": "Rohan", "course": null },
+        { "name": "Sneha", "course": "OS" },
+        { "name": "Karan", "course": "DBMS" },
+        { "name": "Anjali", "course": null },
+        { "name": "Vikram", "course": "Networks" },
+        { "name": "Meera", "course": null },
+        { "name": null, "course": "DBMS" }
+      ]
+    },
+    {
+      "id": "full_outer_nulls",
+      "prompt": "Using the full outer join result, find rows where either the student has no enrollment, or the enrollment has no valid student.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Rohan", "course": null },
+        { "name": "Anjali", "course": null },
+        { "name": "Meera", "course": null },
+        { "name": null, "course": "DBMS" }
+      ]
+    },
+    {
+      "id": "full_outer_count",
+      "prompt": "Count how many total rows the full outer join produces between Students and Enrollments.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "COUNT(*)": 10 }
+      ]
+    }
+  ]
+}

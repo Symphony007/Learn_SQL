@@ -31,7 +31,7 @@ export interface Topic {
     };
     common_mistakes: string[];
   };
-  /** null if every question brings its own fixture. */
-  shared_table: TableFixture | null;
+  /** null if every question brings its own fixture. Can be an array if multiple shared tables. */
+  shared_table: TableFixture | TableFixture[] | null;
   questions: Question[];
 }

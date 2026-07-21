@@ -1,0 +1,85 @@
+{
+  "topic_id": "joining-multiple-tables",
+  "title": "Joining Multiple Tables",
+  "order": 19,
+  "theory": {
+    "concept": "Real queries often need more than two tables — you can chain multiple JOINs in a single query to combine data across several related tables.\n\n- Each additional JOIN needs its own ON clause connecting it to a table already in the query\n- The order of JOINs generally doesn't affect the result, only readability — but it's common to join in an order that follows the logical relationship between tables\n- Aliases become essential here — with three or more tables, unaliased queries get hard to read fast\n- You can mix join types — e.g. an INNER JOIN followed by a LEFT JOIN — depending on which relationships must match and which are optional",
+    "syntax": "SELECT columns FROM table1 \nJOIN table2 ON table1.column = table2.column\nJOIN table3 ON table2.column = table3.column;",
+    "example": {
+      "query": "-- 1. Three tables joined together\nSELECT s.name, e.course, d.department_name FROM Students AS s\nJOIN Enrollments AS e ON s.id = e.student_id\nJOIN Departments AS d ON s.department_id = d.id;"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" },
+        { "name": "department_id", "type": "INTEGER" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  department_id INTEGER\n);",
+      "insert_sql": "INSERT INTO Students (id, name, department_id) VALUES\n(1, 'Aditya', 1),\n(2, 'Priya', 2),\n(3, 'Rohan', 1),\n(4, 'Sneha', 3),\n(5, 'Karan', 2);"
+    },
+    {
+      "name": "Enrollments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "student_id", "type": "INTEGER" },
+        { "name": "course", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Enrollments (\n  id INTEGER PRIMARY KEY,\n  student_id INTEGER,\n  course TEXT\n);",
+      "insert_sql": "INSERT INTO Enrollments (id, student_id, course) VALUES\n(1, 1, 'DBMS'),\n(2, 2, 'Networks'),\n(3, 3, 'DBMS'),\n(4, 5, 'OS');"
+    },
+    {
+      "name": "Departments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "department_name", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Departments (\n  id INTEGER PRIMARY KEY,\n  department_name TEXT\n);",
+      "insert_sql": "INSERT INTO Departments (id, department_name) VALUES\n(1, 'Computer Science'),\n(2, 'Electronics'),\n(3, 'Mechanical');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "join_three_inner",
+      "prompt": "List each enrolled student's name, course, and department name.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course": "DBMS", "department_name": "Computer Science" },
+        { "name": "Priya", "course": "Networks", "department_name": "Electronics" },
+        { "name": "Rohan", "course": "DBMS", "department_name": "Computer Science" },
+        { "name": "Karan", "course": "OS", "department_name": "Electronics" }
+      ]
+    },
+    {
+      "id": "join_three_group",
+      "prompt": "Count how many enrolled students belong to each department.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "department_name": "Computer Science", "COUNT(*)": 2 },
+        { "department_name": "Electronics", "COUNT(*)": 2 }
+      ]
+    },
+    {
+      "id": "join_three_left",
+      "prompt": "List every student's name and department, including students with no enrollment.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "department_name": "Computer Science", "course": "DBMS" },
+        { "name": "Priya", "department_name": "Electronics", "course": "Networks" },
+        { "name": "Rohan", "department_name": "Computer Science", "course": "DBMS" },
+        { "name": "Sneha", "department_name": "Mechanical", "course": null },
+        { "name": "Karan", "department_name": "Electronics", "course": "OS" }
+      ]
+    },
+    {
+      "id": "join_three_distinct",
+      "prompt": "Find department names where at least one enrolled student is taking 'DBMS'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "department_name": "Computer Science" }
+      ]
+    }
+  ]
+}

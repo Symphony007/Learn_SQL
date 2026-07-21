@@ -1,0 +1,65 @@
+{
+  "topic_id": "inner-join",
+  "title": "Combining Tables with INNER JOIN",
+  "order": 13,
+  "theory": {
+    "concept": "INNER JOIN combines rows from two tables where a condition matches in both — only matching rows appear in the result.\n\n- Rows with no match in the other table are left out entirely\n- ON specifies which columns must be equal between the two tables\n- Table aliases from the last topic make join queries much easier to read\n- You can add WHERE after the join to filter the combined rows further",
+    "syntax": "SELECT columns FROM table1 INNER JOIN table2 ON table1.column = table2.column;",
+    "example": {
+      "query": "-- 1. Basic join\nSELECT s.name, e.course FROM Students AS s INNER JOIN Enrollments AS e ON s.id = e.student_id;\n\n-- 2. Join with a filter\nSELECT s.name, e.course FROM Students AS s INNER JOIN Enrollments AS e ON s.id = e.student_id WHERE s.marks > 70;"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" },
+        { "name": "age", "type": "INTEGER" },
+        { "name": "city", "type": "TEXT" },
+        { "name": "marks", "type": "INTEGER" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+      "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+    },
+    {
+      "name": "Enrollments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "student_id", "type": "INTEGER" },
+        { "name": "course", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Enrollments (\n  id INTEGER PRIMARY KEY,\n  student_id INTEGER,\n  course TEXT\n);",
+      "insert_sql": "INSERT INTO Enrollments (id, student_id, course) VALUES\n(1, 1, 'DBMS'),\n(2, 1, 'Networks'),\n(3, 2, 'DBMS'),\n(4, 4, 'OS'),\n(5, 5, 'DBMS'),\n(6, 7, 'Networks'),\n(7, 9, 'DBMS');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "inner_join_where",
+      "prompt": "List the name and course of students from Kolkata who are enrolled in a course.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course": "DBMS" },
+        { "name": "Aditya", "course": "Networks" },
+        { "name": "Sneha", "course": "OS" }
+      ]
+    },
+    {
+      "id": "inner_join_count",
+      "prompt": "Count how many valid students are enrolled in 'DBMS'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "COUNT(*)": 3 }
+      ]
+    },
+    {
+      "id": "inner_join_filter",
+      "prompt": "List the name and course of enrolled students who scored above 80 marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya", "course": "DBMS" },
+        { "name": "Sneha", "course": "OS" }
+      ]
+    }
+  ]
+}

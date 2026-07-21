@@ -1,0 +1,70 @@
+{
+  "topic_id": "right-join",
+  "title": "RIGHT JOIN",
+  "order": 15,
+  "theory": {
+    "concept": "RIGHT JOIN returns every row from the right table, plus matching rows from the left table — the mirror image of LEFT JOIN.\n\n- Every row from the right table appears at least once, matched or not\n- Unmatched rows show NULL for the left table's columns\n- Swapping the table order and using LEFT JOIN instead produces the same result as RIGHT JOIN",
+    "syntax": "SELECT columns FROM table1 RIGHT JOIN table2 ON table1.column = table2.column;",
+    "example": {
+      "query": "-- 1. Right join filtered by course\nSELECT s.name, e.course FROM Students AS s RIGHT JOIN Enrollments AS e ON s.id = e.student_id WHERE e.course = 'DBMS';\n\n-- 2. Right join selecting a different column pair\nSELECT e.course, s.city FROM Students AS s RIGHT JOIN Enrollments AS e ON s.id = e.student_id WHERE e.course = 'Networks';"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" },
+        { "name": "age", "type": "INTEGER" },
+        { "name": "city", "type": "TEXT" },
+        { "name": "marks", "type": "INTEGER" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+      "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+    },
+    {
+      "name": "Enrollments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "student_id", "type": "INTEGER" },
+        { "name": "course", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Enrollments (\n  id INTEGER PRIMARY KEY,\n  student_id INTEGER,\n  course TEXT\n);",
+      "insert_sql": "INSERT INTO Enrollments (id, student_id, course) VALUES\n(1, 1, 'DBMS'),\n(2, 1, 'Networks'),\n(3, 2, 'DBMS'),\n(4, 4, 'OS'),\n(5, 5, 'DBMS'),\n(6, 7, 'Networks'),\n(7, 9, 'DBMS');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "right_join_all",
+      "prompt": "List every enrollment's course and the enrolled student's name, including enrollments with no valid student.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "course": "DBMS", "name": "Aditya" },
+        { "course": "Networks", "name": "Aditya" },
+        { "course": "DBMS", "name": "Priya" },
+        { "course": "OS", "name": "Sneha" },
+        { "course": "DBMS", "name": "Karan" },
+        { "course": "Networks", "name": "Vikram" },
+        { "course": "DBMS", "name": null }
+      ]
+    },
+    {
+      "id": "right_join_nulls",
+      "prompt": "Find enrollment records whose student_id does not correspond to any real student.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "id": 7, "course": "DBMS", "student_id": 9 }
+      ]
+    },
+    {
+      "id": "right_join_count",
+      "prompt": "Count how many enrollment records exist for each course, including ones with no valid student.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "course": "DBMS", "COUNT(*)": 4 },
+        { "course": "Networks", "COUNT(*)": 2 },
+        { "course": "OS", "COUNT(*)": 1 }
+      ]
+    }
+  ]
+}

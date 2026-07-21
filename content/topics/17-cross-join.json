@@ -1,0 +1,66 @@
+{
+  "topic_id": "cross-join",
+  "title": "Generating Combinations with CROSS JOIN",
+  "order": 17,
+  "theory": {
+    "concept": "CROSS JOIN pairs every row from one table with every row from another — no matching condition at all, just every possible combination.\n\n- The result size is the number of rows in table1 multiplied by the number of rows in table2 — this grows fast, so it's rarely used on large tables directly\n- Useful for generating combinations that don't naturally exist in your data yet — e.g. every product paired with every size, before you know which combinations actually sold\n- Different from INNER JOIN with no ON clause producing the same result by accident — CROSS JOIN is explicit about the intent\n- You can still add WHERE after a CROSS JOIN to narrow the combinations down to ones you actually care about",
+    "syntax": "SELECT columns FROM table1 CROSS JOIN table2;",
+    "example": {
+      "query": "-- 1. Every student paired with every course offered\nSELECT s.name, c.course_name FROM Students AS s CROSS JOIN Courses AS c;"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT\n);",
+      "insert_sql": "INSERT INTO Students (id, name) VALUES\n(1, 'Aditya'),\n(2, 'Priya'),\n(3, 'Rohan');"
+    },
+    {
+      "name": "Courses",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "course_name", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Courses (\n  id INTEGER PRIMARY KEY,\n  course_name TEXT\n);",
+      "insert_sql": "INSERT INTO Courses (id, course_name) VALUES\n(1, 'DBMS'),\n(2, 'Networks');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "cross_join_all",
+      "prompt": "List every possible student-course combination.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course_name": "DBMS" },
+        { "name": "Aditya", "course_name": "Networks" },
+        { "name": "Priya", "course_name": "DBMS" },
+        { "name": "Priya", "course_name": "Networks" },
+        { "name": "Rohan", "course_name": "DBMS" },
+        { "name": "Rohan", "course_name": "Networks" }
+      ]
+    },
+    {
+      "id": "cross_join_count",
+      "prompt": "Count how many total student-course combinations exist.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "COUNT(*)": 6 }
+      ]
+    },
+    {
+      "id": "cross_join_filter",
+      "prompt": "List only the combinations involving 'Priya' or the course 'Networks'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course_name": "Networks" },
+        { "name": "Priya", "course_name": "DBMS" },
+        { "name": "Priya", "course_name": "Networks" },
+        { "name": "Rohan", "course_name": "Networks" }
+      ]
+    }
+  ]
+}

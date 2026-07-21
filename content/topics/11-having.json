@@ -1,0 +1,54 @@
+{
+  "topic_id": "having",
+  "title": "Filtering Groups with HAVING",
+  "order": 11,
+  "theory": {
+    "concept": "HAVING filters groups after GROUP BY runs, unlike WHERE which filters individual rows before grouping.\n\n- Use HAVING when the condition involves an aggregate function (COUNT, SUM, AVG, etc.)\n- WHERE and HAVING can be used together — WHERE narrows rows first, HAVING narrows the resulting groups\n- A condition on a plain column (not an aggregate) belongs in WHERE, not HAVING",
+    "syntax": "SELECT column1, AGG_FUNC(column2) FROM table_name GROUP BY column1 HAVING condition;",
+    "example": {
+      "query": "-- 1. Groups above a count threshold\nSELECT city, COUNT(*) FROM Students GROUP BY city HAVING COUNT(*) > 1;\n\n-- 2. WHERE and HAVING combined\nSELECT city, AVG(marks) FROM Students WHERE age >= 21 GROUP BY city HAVING AVG(marks) > 70;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "having_avg",
+      "prompt": "Find cities where the average marks is above 70.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Chennai", "AVG(marks)": 88 },
+        { "city": "Delhi", "AVG(marks)": 75 },
+        { "city": "Kolkata", "AVG(marks)": 77 }
+      ]
+    },
+    {
+      "id": "having_count",
+      "prompt": "Find cities that have more than 2 students.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Delhi", "COUNT(*)": 3 },
+        { "city": "Kolkata", "COUNT(*)": 3 }
+      ]
+    },
+    {
+      "id": "having_max_with_where",
+      "prompt": "Among students older than 20, find cities where the maximum marks exceeds 80.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Delhi", "MAX(marks)": 85 },
+        { "city": "Kolkata", "MAX(marks)": 91 }
+      ]
+    }
+  ]
+}

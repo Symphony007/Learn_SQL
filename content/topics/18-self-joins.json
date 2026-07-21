@@ -1,0 +1,68 @@
+{
+  "topic_id": "self-joins",
+  "title": "Self Joins",
+  "order": 18,
+  "theory": {
+    "concept": "A self join joins a table to itself, treating it as if it were two separate tables — used when rows in a table relate to other rows in that same table.\n\n- Requires two aliases for the same table, so the two \"copies\" can be told apart in the query\n- The classic example: an employee table where each row has a manager_id pointing to another row's id in the same table\n- The join condition connects one alias's foreign-key-like column to the other alias's primary key — e.g. e.manager_id = m.id\n- Combine with LEFT JOIN instead of INNER JOIN if you want to include rows that have no match (e.g. an employee with no manager)",
+    "syntax": "SELECT a.column, b.column FROM table_name AS a JOIN table_name AS b ON a.some_column = b.some_column;",
+    "example": {
+      "query": "-- 1. Matching each employee to their manager's name\nSELECT e.name AS employee, m.name AS manager FROM Employees AS e JOIN Employees AS m ON e.manager_id = m.id;"
+    }
+  },
+  "shared_table": {
+    "name": "Employees",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "manager_id", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Employees (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  manager_id INTEGER\n);",
+    "insert_sql": "INSERT INTO Employees (id, name, manager_id) VALUES\n(1, 'Aditya', NULL),\n(2, 'Priya', 1),\n(3, 'Rohan', 1),\n(4, 'Sneha', 2),\n(5, 'Karan', 2),\n(6, 'Anjali', 3),\n(7, 'Vikram', NULL);"
+  },
+  "questions": [
+    {
+      "id": "self_join_inner",
+      "prompt": "List each employee's name along with their manager's name, only including employees who have a manager.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "employee": "Priya", "manager": "Aditya" },
+        { "employee": "Rohan", "manager": "Aditya" },
+        { "employee": "Sneha", "manager": "Priya" },
+        { "employee": "Karan", "manager": "Priya" },
+        { "employee": "Anjali", "manager": "Rohan" }
+      ]
+    },
+    {
+      "id": "self_join_nulls",
+      "prompt": "List the names of employees who have no manager.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Vikram" }
+      ]
+    },
+    {
+      "id": "self_join_left",
+      "prompt": "List each employee's name and their manager's name, including employees with no manager (show NULL for the manager).",
+      "order_sensitive": false,
+      "expected_result": [
+        { "employee": "Aditya", "manager": null },
+        { "employee": "Priya", "manager": "Aditya" },
+        { "employee": "Rohan", "manager": "Aditya" },
+        { "employee": "Sneha", "manager": "Priya" },
+        { "employee": "Karan", "manager": "Priya" },
+        { "employee": "Anjali", "manager": "Rohan" },
+        { "employee": "Vikram", "manager": null }
+      ]
+    },
+    {
+      "id": "self_join_group",
+      "prompt": "Find managers who have more than one direct report.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "COUNT(*)": 2 },
+        { "name": "Priya", "COUNT(*)": 2 }
+      ]
+    }
+  ]
+}

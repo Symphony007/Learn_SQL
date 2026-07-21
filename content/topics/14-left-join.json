@@ -1,0 +1,76 @@
+{
+  "topic_id": "left-join",
+  "title": "Keeping Unmatched Rows with LEFT JOIN",
+  "order": 14,
+  "theory": {
+    "concept": "LEFT JOIN returns every row from the left table, plus matching rows from the right table — if there's no match, the right table's columns come back as NULL.\n\n- Every row from the left table appears at least once, matched or not\n- To find left-table rows with no match, filter with WHERE right_table.column IS NULL\n- The join condition works the same as INNER JOIN — only the treatment of unmatched left rows differs",
+    "syntax": "SELECT columns FROM table1 LEFT JOIN table2 ON table1.column = table2.column;",
+    "example": {
+      "query": "-- 1. Left join with a city filter\nSELECT s.name, e.course FROM Students AS s LEFT JOIN Enrollments AS e ON s.id = e.student_id WHERE s.city = 'Delhi';\n\n-- 2. Finding unmatched rows with an added condition\nSELECT s.name FROM Students AS s LEFT JOIN Enrollments AS e ON s.id = e.student_id WHERE e.student_id IS NULL AND s.age > 21;"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" },
+        { "name": "age", "type": "INTEGER" },
+        { "name": "city", "type": "TEXT" },
+        { "name": "marks", "type": "INTEGER" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+      "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+    },
+    {
+      "name": "Enrollments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "student_id", "type": "INTEGER" },
+        { "name": "course", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Enrollments (\n  id INTEGER PRIMARY KEY,\n  student_id INTEGER,\n  course TEXT\n);",
+      "insert_sql": "INSERT INTO Enrollments (id, student_id, course) VALUES\n(1, 1, 'DBMS'),\n(2, 1, 'Networks'),\n(3, 2, 'DBMS'),\n(4, 4, 'OS'),\n(5, 5, 'DBMS'),\n(6, 7, 'Networks'),\n(7, 9, 'DBMS');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "left_join_all",
+      "prompt": "List every student's name and course, including students with no enrollment.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course": "DBMS" },
+        { "name": "Aditya", "course": "Networks" },
+        { "name": "Priya", "course": "DBMS" },
+        { "name": "Rohan", "course": null },
+        { "name": "Sneha", "course": "OS" },
+        { "name": "Karan", "course": "DBMS" },
+        { "name": "Anjali", "course": null },
+        { "name": "Vikram", "course": "Networks" },
+        { "name": "Meera", "course": null }
+      ]
+    },
+    {
+      "id": "left_join_nulls",
+      "prompt": "Find the names of students who are not enrolled in any course.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Rohan" },
+        { "name": "Anjali" },
+        { "name": "Meera" }
+      ]
+    },
+    {
+      "id": "left_join_or",
+      "prompt": "List the name and course of students from Kolkata or Bangalore, including those without an enrollment.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "course": "DBMS" },
+        { "name": "Aditya", "course": "Networks" },
+        { "name": "Rohan", "course": null },
+        { "name": "Sneha", "course": "OS" },
+        { "name": "Karan", "course": "DBMS" }
+      ]
+    }
+  ]
+}

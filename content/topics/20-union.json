@@ -1,0 +1,59 @@
+{
+  "topic_id": "union",
+  "title": "Combining Result Sets with UNION",
+  "order": 20,
+  "theory": {
+    "concept": "UNION stacks the results of two or more SELECT queries into a single result set, one on top of the other.\n\n- Both SELECTs must return the same number of columns, in compatible types — column names in the output come from the first SELECT\n- UNION removes exact duplicate rows across the combined results by default\n- UNION ALL keeps every row, including duplicates — faster than UNION since it skips the duplicate-checking step, and the right choice when you know there won't be duplicates or don't care about them\n- Useful for combining similar data from different tables (or different filtered slices of the same table) into one unified list",
+    "syntax": "SELECT column1, column2 FROM table1\nUNION\nSELECT column1, column2 FROM table2;\n\nSELECT column1, column2 FROM table1\nUNION ALL\nSELECT column1, column2 FROM table2;",
+    "example": {
+      "query": "-- 1. Combining two filtered slices of the same table, duplicates removed\nSELECT name FROM Students WHERE city = 'Kolkata'\nUNION\nSELECT name FROM Students WHERE marks > 80;\n\n-- 2. The same combination using UNION ALL, keeping any duplicates\nSELECT name FROM Students WHERE city = 'Kolkata'\nUNION ALL\nSELECT name FROM Students WHERE marks > 80;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "union_distinct",
+      "prompt": "List the names of students who are either from Delhi or scored above 85, with duplicates removed.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya" },
+        { "name": "Anjali" },
+        { "name": "Meera" },
+        { "name": "Sneha" },
+        { "name": "Vikram" }
+      ]
+    },
+    {
+      "id": "union_all",
+      "prompt": "Run the same query as above using UNION ALL instead, and note how the result differs.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya" },
+        { "name": "Anjali" },
+        { "name": "Meera" },
+        { "name": "Priya" },
+        { "name": "Sneha" },
+        { "name": "Vikram" }
+      ]
+    },
+    {
+      "id": "union_count",
+      "prompt": "Count how many rows UNION ALL returns versus how many UNION returns, for students from Kolkata combined with students who scored above 90.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "COUNT(*)": 4 }
+      ]
+    }
+  ]
+}

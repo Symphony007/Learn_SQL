@@ -1,0 +1,57 @@
+{
+  "topic_id": "aliases",
+  "title": "Using Aliases (AS)",
+  "order": 12,
+  "theory": {
+    "concept": "AS renames a column or table in the query's output, without changing the underlying data.\n\n- Aliases make output columns more readable, especially for aggregate results like COUNT(*)\n- Table aliases shorten long table names — this becomes essential once you start joining multiple tables\n- AS is optional in most engines, but writing it explicitly keeps queries clear\n- The alias only exists for that query — it doesn't rename anything permanently",
+    "syntax": "SELECT column_name AS alias_name FROM table_name;\n\nSELECT t.column_name FROM table_name AS t;",
+    "example": {
+      "query": "-- 1. Column alias on an aggregate\nSELECT city, COUNT(*) AS student_count FROM Students GROUP BY city;\n\n-- 2. Table alias in a filtered query\nSELECT s.name, s.marks FROM Students AS s WHERE s.marks > 80;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "alias_avg",
+      "prompt": "Find the average marks per city, aliased as avg_marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Bangalore", "avg_marks": 55 },
+        { "city": "Chennai", "avg_marks": 88 },
+        { "city": "Delhi", "avg_marks": 75 },
+        { "city": "Kolkata", "avg_marks": 77 }
+      ]
+    },
+    {
+      "id": "alias_table",
+      "prompt": "Using a table alias st, select the name and age of students older than 21.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya", "age": 22 },
+        { "name": "Sneha", "age": 23 },
+        { "name": "Anjali", "age": 22 },
+        { "name": "Meera", "age": 22 }
+      ]
+    },
+    {
+      "id": "alias_sum",
+      "prompt": "Select the total marks per city, aliased as total_marks, only for cities with more than one student.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Delhi", "total_marks": 225 },
+        { "city": "Kolkata", "total_marks": 231 }
+      ]
+    }
+  ]
+}
