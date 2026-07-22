@@ -1,0 +1,85 @@
+{
+  "topic_id": "ranking-navigation",
+  "title": "Ranking & Navigation Functions",
+  "order": 29,
+  "theory": {
+    "concept": "ROW_NUMBER, RANK, and DENSE_RANK assign a position to each row within a window, ordered by whatever you specify inside OVER(); LAG and LEAD look at a neighboring row's value.\n\n- ROW_NUMBER always gives unique, sequential numbers — even tied rows get different numbers, so results with ties are non-deterministic unless you add a tiebreaker column to ORDER BY\n- RANK gives tied rows the same rank, then skips ahead by the number of ties (two rows tied for 1st means the next row is ranked 3rd)\n- DENSE_RANK also gives tied rows the same rank, but doesn't skip (the row after a tie for 1st is ranked 2nd)\n- LAG looks at the previous row's value within the ordered window; LEAD looks at the next row's value — both return NULL at the boundary where there's no such row",
+    "syntax": "SELECT columns, ROW_NUMBER() OVER (ORDER BY column DESC) AS row_num FROM table_name;\nSELECT columns, RANK() OVER (PARTITION BY column1 ORDER BY column2 DESC) AS rnk FROM table_name;\nSELECT columns, LAG(column) OVER (ORDER BY column) AS prev_value FROM table_name;",
+    "example": {
+      "query": "-- 1. Ranking all students by marks descending\nSELECT name, marks, RANK() OVER (ORDER BY marks DESC) AS rnk FROM Students;\n\n-- 2. Comparing each student's marks to the next-lower-ranked student\nSELECT name, marks, LEAD(name) OVER (ORDER BY marks DESC, name) AS next_student FROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, city, marks) VALUES\n(1, 'Aditya', 'Kolkata', 85),\n(2, 'Priya', 'Delhi', 85),\n(3, 'Rohan', 'Kolkata', 78),\n(4, 'Sneha', 'Kolkata', 91),\n(5, 'Karan', 'Bangalore', 78),\n(6, 'Anjali', 'Delhi', 73),\n(7, 'Vikram', 'Chennai', 88),\n(8, 'Meera', 'Delhi', 73);"
+  },
+  "questions": [
+    {
+      "id": "row_number",
+      "prompt": "Assign each student a row number based on marks descending, breaking ties alphabetically by name.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Sneha", "marks": 91, "row_num": 1 },
+        { "name": "Vikram", "marks": 88, "row_num": 2 },
+        { "name": "Aditya", "marks": 85, "row_num": 3 },
+        { "name": "Priya", "marks": 85, "row_num": 4 },
+        { "name": "Karan", "marks": 78, "row_num": 5 },
+        { "name": "Rohan", "marks": 78, "row_num": 6 },
+        { "name": "Anjali", "marks": 73, "row_num": 7 },
+        { "name": "Meera", "marks": 73, "row_num": 8 }
+      ]
+    },
+    {
+      "id": "dense_rank",
+      "prompt": "Assign each student a DENSE_RANK based on marks descending.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Sneha", "marks": 91, "dense_rnk": 1 },
+        { "name": "Vikram", "marks": 88, "dense_rnk": 2 },
+        { "name": "Aditya", "marks": 85, "dense_rnk": 3 },
+        { "name": "Priya", "marks": 85, "dense_rnk": 3 },
+        { "name": "Karan", "marks": 78, "dense_rnk": 4 },
+        { "name": "Rohan", "marks": 78, "dense_rnk": 4 },
+        { "name": "Anjali", "marks": 73, "dense_rnk": 5 },
+        { "name": "Meera", "marks": 73, "dense_rnk": 5 }
+      ]
+    },
+    {
+      "id": "rank_partition",
+      "prompt": "Within each city, rank students by marks descending using RANK.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Sneha", "city": "Kolkata", "marks": 91, "city_rank": 1 },
+        { "name": "Aditya", "city": "Kolkata", "marks": 85, "city_rank": 2 },
+        { "name": "Rohan", "city": "Kolkata", "marks": 78, "city_rank": 3 },
+        { "name": "Priya", "city": "Delhi", "marks": 85, "city_rank": 1 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73, "city_rank": 2 },
+        { "name": "Meera", "city": "Delhi", "marks": 73, "city_rank": 2 },
+        { "name": "Karan", "city": "Bangalore", "marks": 78, "city_rank": 1 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88, "city_rank": 1 }
+      ]
+    },
+    {
+      "id": "lag_lead",
+      "prompt": "For each student ordered by marks descending (name as tiebreaker), show the marks of the student immediately before (LAG) and after (LEAD) them.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Sneha", "marks": 91, "prev_marks": null, "next_marks": 88 },
+        { "name": "Vikram", "marks": 88, "prev_marks": 91, "next_marks": 85 },
+        { "name": "Aditya", "marks": 85, "prev_marks": 88, "next_marks": 85 },
+        { "name": "Priya", "marks": 85, "prev_marks": 85, "next_marks": 78 },
+        { "name": "Karan", "marks": 78, "prev_marks": 85, "next_marks": 78 },
+        { "name": "Rohan", "marks": 78, "prev_marks": 78, "next_marks": 73 },
+        { "name": "Anjali", "marks": 73, "prev_marks": 78, "next_marks": 73 },
+        { "name": "Meera", "marks": 73, "prev_marks": 73, "next_marks": null }
+      ]
+    }
+  ]
+}

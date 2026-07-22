@@ -1,0 +1,58 @@
+{
+  "topic_id": "pivoting",
+  "title": "Pivoting Data with CASE & Aggregates",
+  "order": 32,
+  "theory": {
+    "concept": "Pivoting turns row values into columns — instead of one row per category, you get one row per group with a column for each category.\n\n- SQLite has no built-in PIVOT keyword, so it's done manually with CASE inside an aggregate function\n- The pattern: SUM(CASE WHEN category_column = 'X' THEN value_column ELSE 0 END) AS X, repeated for each category you want as a column\n- Usually combined with GROUP BY on whatever should remain as rows",
+    "syntax": "SELECT group_column,\n  SUM(CASE WHEN category_column = 'A' THEN value_column ELSE 0 END) AS A,\n  SUM(CASE WHEN category_column = 'B' THEN value_column ELSE 0 END) AS B\nFROM table_name\nGROUP BY group_column;",
+    "example": {
+      "query": "-- 1. Pivoting total order amount by category, per customer\nSELECT customer,\n  SUM(CASE WHEN category = 'Electronics' THEN amount ELSE 0 END) AS electronics,\n  SUM(CASE WHEN category = 'Clothing' THEN amount ELSE 0 END) AS clothing,\n  SUM(CASE WHEN category = 'Grocery' THEN amount ELSE 0 END) AS grocery\nFROM Orders\nGROUP BY customer;"
+    }
+  },
+  "shared_table": {
+    "name": "Orders",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "customer", "type": "TEXT" },
+      { "name": "order_date", "type": "TEXT" },
+      { "name": "amount", "type": "INTEGER" },
+      { "name": "category", "type": "TEXT" }
+    ],
+    "create_sql": "CREATE TABLE Orders (\n  id INTEGER PRIMARY KEY,\n  customer TEXT,\n  order_date TEXT,\n  amount INTEGER,\n  category TEXT\n);",
+    "insert_sql": "INSERT INTO Orders (id, customer, order_date, amount, category) VALUES\n(1, 'Aditya', '2024-01-15', 2500, 'Electronics'),\n(2, 'Priya', '2024-02-20', 1800, 'Clothing'),\n(3, 'Rohan', '2024-01-28', 3200, 'Electronics'),\n(4, 'Sneha', '2024-03-05', 1500, 'Clothing'),\n(5, 'Karan', '2024-02-10', 2100, 'Electronics'),\n(6, 'Anjali', '2024-03-22', 2700, 'Grocery'),\n(7, 'Vikram', '2024-01-05', 1900, 'Grocery'),\n(8, 'Priya', '2024-03-10', 1200, 'Grocery');"
+  },
+  "questions": [
+    {
+      "id": "pivot_months",
+      "prompt": "For each order month, pivot total order amount into columns for 'Electronics', 'Clothing', and 'Grocery'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "order_month": "01", "electronics": 5700, "clothing": 0, "grocery": 1900 },
+        { "order_month": "02", "electronics": 2100, "clothing": 1800, "grocery": 0 },
+        { "order_month": "03", "electronics": 0, "clothing": 1500, "grocery": 3900 }
+      ]
+    },
+    {
+      "id": "pivot_count",
+      "prompt": "Pivot the count of orders per category into columns, per customer, only for customers with more than one order.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "customer": "Priya", "electronics_count": 0, "clothing_count": 1, "grocery_count": 1 }
+      ]
+    },
+    {
+      "id": "pivot_subset",
+      "prompt": "Pivot total amount spent into columns for just 'Electronics' and 'Grocery', per customer.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "customer": "Aditya", "electronics": 2500, "grocery": 0 },
+        { "customer": "Priya", "electronics": 0, "grocery": 1200 },
+        { "customer": "Rohan", "electronics": 3200, "grocery": 0 },
+        { "customer": "Sneha", "electronics": 0, "grocery": 0 },
+        { "customer": "Karan", "electronics": 2100, "grocery": 0 },
+        { "customer": "Anjali", "electronics": 0, "grocery": 2700 },
+        { "customer": "Vikram", "electronics": 0, "grocery": 1900 }
+      ]
+    }
+  ]
+}

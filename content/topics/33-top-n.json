@@ -1,0 +1,57 @@
+{
+  "topic_id": "top-n",
+  "title": "Top-N Per Group",
+  "order": 33,
+  "theory": {
+    "concept": "A very common interview pattern: instead of the overall top N rows, you need the top N rows within each group — e.g. the top 2 highest scorers per city.\n\n- GROUP BY alone can't do this since it collapses rows; instead, use a ranking window function (ROW_NUMBER, RANK, or DENSE_RANK) partitioned by the group, then filter on that rank\n- Since window functions can't be filtered directly in the same clause they're computed in, wrap the ranked query in a CTE or derived table, and filter in the outer query\n- ROW_NUMBER always gives exactly N rows per group even with ties; RANK can return more than N rows if there's a tie at the Nth position — choose based on whether ties should count as sharing a position or not",
+    "syntax": "WITH ranked AS (\n  SELECT columns, ROW_NUMBER() OVER (PARTITION BY group_column ORDER BY sort_column DESC) AS rn\n  FROM table_name\n)\nSELECT * FROM ranked WHERE rn <= N;",
+    "example": {
+      "query": "-- 1. Top scorer per city\nWITH ranked AS (\n  SELECT name, city, marks, ROW_NUMBER() OVER (PARTITION BY city ORDER BY marks DESC) AS rn\n  FROM Students\n)\nSELECT name, city, marks FROM ranked WHERE rn = 1;\n\n-- 2. Top 2 scorers per city\nWITH ranked AS (\n  SELECT name, city, marks, ROW_NUMBER() OVER (PARTITION BY city ORDER BY marks DESC) AS rn\n  FROM Students\n)\nSELECT name, city, marks FROM ranked WHERE rn <= 2;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "top_1",
+      "prompt": "Find the top scorer in each city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Sneha", "city": "Kolkata", "marks": 91 },
+        { "name": "Priya", "city": "Delhi", "marks": 85 },
+        { "name": "Karan", "city": "Bangalore", "marks": 55 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88 }
+      ]
+    },
+    {
+      "id": "top_2_filtered",
+      "prompt": "Find the top 2 scorers in each city, only for cities with at least 2 students.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Sneha", "city": "Kolkata", "marks": 91 },
+        { "name": "Aditya", "city": "Kolkata", "marks": 78 },
+        { "name": "Priya", "city": "Delhi", "marks": 85 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73 }
+      ]
+    },
+    {
+      "id": "second_highest",
+      "prompt": "Find the second-highest scorer in each city, only for cities with at least 2 students.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata", "marks": 78 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "topic_id": "running-totals",
+  "title": "Running Totals & Window Aggregates",
+  "order": 30,
+  "theory": {
+    "concept": "A running total accumulates a sum as you move through rows in a defined order — each row shows the sum of itself plus every row before it.\n\n- Achieved with SUM() OVER (ORDER BY column) — without PARTITION BY, it runs across the whole table; with PARTITION BY, it resets per group\n- When ORDER BY is used inside OVER(), the default frame runs from the start of the partition up to the current row — this is what produces the \"running\" effect instead of a flat total\n- The same idea applies to running MIN, MAX, AVG, COUNT — not just SUM\n- A moving average over a fixed number of preceding rows needs an explicit frame, e.g. ROWS BETWEEN 1 PRECEDING AND CURRENT ROW",
+    "syntax": "SELECT columns, SUM(column) OVER (ORDER BY sort_column) AS running_total FROM table_name;\n\nSELECT columns, SUM(column) OVER (PARTITION BY group_column ORDER BY sort_column) AS running_total FROM table_name;",
+    "example": {
+      "query": "-- 1. Running total of marks ordered by id\nSELECT id, name, marks, SUM(marks) OVER (ORDER BY id) AS running_total FROM Students;\n\n-- 2. Running total within each city, ordered by marks ascending\nSELECT name, city, marks, SUM(marks) OVER (PARTITION BY city ORDER BY marks) AS running_total_in_city FROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "running_total",
+      "prompt": "Show each student's marks along with the running total of marks, ordered by id.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "id": 1, "name": "Aditya", "marks": 78, "running_total": 78 },
+        { "id": 2, "name": "Priya", "marks": 85, "running_total": 163 },
+        { "id": 3, "name": "Rohan", "marks": 62, "running_total": 225 },
+        { "id": 4, "name": "Sneha", "marks": 91, "running_total": 316 },
+        { "id": 5, "name": "Karan", "marks": 55, "running_total": 371 },
+        { "id": 6, "name": "Anjali", "marks": 73, "running_total": 444 },
+        { "id": 7, "name": "Vikram", "marks": 88, "running_total": 532 },
+        { "id": 8, "name": "Meera", "marks": 67, "running_total": 599 }
+      ]
+    },
+    {
+      "id": "running_max",
+      "prompt": "Show each student's marks along with the running maximum marks seen so far, ordered by id.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "id": 1, "name": "Aditya", "marks": 78, "running_max": 78 },
+        { "id": 2, "name": "Priya", "marks": 85, "running_max": 85 },
+        { "id": 3, "name": "Rohan", "marks": 62, "running_max": 85 },
+        { "id": 4, "name": "Sneha", "marks": 91, "running_max": 91 },
+        { "id": 5, "name": "Karan", "marks": 55, "running_max": 91 },
+        { "id": 6, "name": "Anjali", "marks": 73, "running_max": 91 },
+        { "id": 7, "name": "Vikram", "marks": 88, "running_max": 91 },
+        { "id": 8, "name": "Meera", "marks": 67, "running_max": 91 }
+      ]
+    },
+    {
+      "id": "running_total_partition",
+      "prompt": "Within each city, show the running total of marks ordered by marks ascending.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Rohan", "city": "Kolkata", "marks": 62, "running_total_in_city": 62 },
+        { "name": "Aditya", "city": "Kolkata", "marks": 78, "running_total_in_city": 140 },
+        { "name": "Sneha", "city": "Kolkata", "marks": 91, "running_total_in_city": 231 },
+        { "name": "Meera", "city": "Delhi", "marks": 67, "running_total_in_city": 67 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73, "running_total_in_city": 140 },
+        { "name": "Priya", "city": "Delhi", "marks": 85, "running_total_in_city": 225 },
+        { "name": "Karan", "city": "Bangalore", "marks": 55, "running_total_in_city": 55 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88, "running_total_in_city": 88 }
+      ]
+    },
+    {
+      "id": "moving_avg",
+      "prompt": "Show each student's marks along with a 2-row moving average (their marks and the immediately preceding student's marks), ordered by id.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "id": 1, "name": "Aditya", "marks": 78, "moving_avg": 78 },
+        { "id": 2, "name": "Priya", "marks": 85, "moving_avg": 81.5 },
+        { "id": 3, "name": "Rohan", "marks": 62, "moving_avg": 73.5 },
+        { "id": 4, "name": "Sneha", "marks": 91, "moving_avg": 76.5 },
+        { "id": 5, "name": "Karan", "marks": 55, "moving_avg": 73 },
+        { "id": 6, "name": "Anjali", "marks": 73, "moving_avg": 64 },
+        { "id": 7, "name": "Vikram", "marks": 88, "moving_avg": 80.5 },
+        { "id": 8, "name": "Meera", "marks": 67, "moving_avg": 77.5 }
+      ]
+    }
+  ]
+}

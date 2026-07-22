@@ -1,0 +1,67 @@
+{
+  "topic_id": "recursive-ctes",
+  "title": "Recursive CTEs",
+  "order": 27,
+  "theory": {
+    "concept": "A recursive CTE references itself, building up results iteratively — used for hierarchical or sequential data like org charts, category trees, or number sequences.\n\n- Has two parts joined by UNION ALL: an \"anchor\" query (the starting point) and a \"recursive\" query (which references the CTE itself and builds on the previous step)\n- The recursive part keeps running, feeding its own output back in as input, until it produces no new rows\n- Common uses: traversing a manager hierarchy, generating a sequence of numbers or dates, computing distance/depth across levels\n- Requires the RECURSIVE keyword after WITH in SQLite (and most engines that support it)",
+    "syntax": "WITH RECURSIVE cte_name AS (\n  SELECT ...          -- anchor\n  UNION ALL\n  SELECT ... FROM cte_name WHERE ...   -- recursive part\n)\nSELECT * FROM cte_name;",
+    "example": {
+      "query": "-- 1. Generating a sequence of numbers\nWITH RECURSIVE numbers AS (\n  SELECT 1 AS n\n  UNION ALL\n  SELECT n + 1 FROM numbers WHERE n < 5\n)\nSELECT * FROM numbers;\n\n-- 2. Traversing a manager hierarchy\nWITH RECURSIVE reports AS (\n  SELECT id, name, manager_id, 0 AS level FROM Employees WHERE manager_id IS NULL\n  UNION ALL\n  SELECT e.id, e.name, e.manager_id, r.level + 1 FROM Employees AS e\n  JOIN reports AS r ON e.manager_id = r.id\n)\nSELECT * FROM reports;"
+    }
+  },
+  "shared_table": {
+    "name": "Employees",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "manager_id", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Employees (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  manager_id INTEGER\n);",
+    "insert_sql": "INSERT INTO Employees (id, name, manager_id) VALUES\n(1, 'Aditya', NULL),\n(2, 'Priya', 1),\n(3, 'Rohan', 1),\n(4, 'Sneha', 2),\n(5, 'Karan', 2),\n(6, 'Anjali', 3),\n(7, 'Vikram', NULL);"
+  },
+  "questions": [
+    {
+      "id": "recursive_numbers",
+      "prompt": "Generate a sequence of numbers from 1 to 10.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "n": 1 },
+        { "n": 2 },
+        { "n": 3 },
+        { "n": 4 },
+        { "n": 5 },
+        { "n": 6 },
+        { "n": 7 },
+        { "n": 8 },
+        { "n": 9 },
+        { "n": 10 }
+      ]
+    },
+    {
+      "id": "recursive_hierarchy",
+      "prompt": "Using a recursive CTE, list every employee along with their level in the hierarchy (top-level managers = level 0).",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "level": 0 },
+        { "name": "Vikram", "level": 0 },
+        { "name": "Priya", "level": 1 },
+        { "name": "Rohan", "level": 1 },
+        { "name": "Sneha", "level": 2 },
+        { "name": "Karan", "level": 2 },
+        { "name": "Anjali", "level": 2 }
+      ]
+    },
+    {
+      "id": "recursive_subordinates",
+      "prompt": "Using the recursive hierarchy, find all employees who report (directly or indirectly) to 'Aditya'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya" },
+        { "name": "Rohan" },
+        { "name": "Sneha" },
+        { "name": "Karan" },
+        { "name": "Anjali" }
+      ]
+    }
+  ]
+}

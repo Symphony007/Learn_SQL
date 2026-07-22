@@ -1,0 +1,53 @@
+{
+  "topic_id": "ctes",
+  "title": "Common Table Expressions (WITH)",
+  "order": 26,
+  "theory": {
+    "concept": "WITH defines a named temporary result set that exists only for the duration of the query — a more readable alternative to a derived table.\n\n- Same underlying purpose as a subquery in FROM, but doesn't need to be nested in parentheses inline, which makes complex queries much easier to read\n- Multiple CTEs can be defined in one WITH clause, separated by commas — later CTEs can reference earlier ones in the same query\n- A CTE is only visible to the query it's attached to — it doesn't persist afterward like a view would\n- Especially useful when the same computed result needs to be referenced more than once in a query",
+    "syntax": "WITH cte_name AS (\n  SELECT ...\n)\nSELECT ... FROM cte_name;",
+    "example": {
+      "query": "-- 1. Basic CTE replacing a derived table\nWITH city_avg AS (\n  SELECT city, AVG(marks) AS avg_marks FROM Students GROUP BY city\n)\nSELECT * FROM city_avg WHERE avg_marks > 70;\n\n-- 2. Multiple CTEs chained together\nWITH city_stats AS (\n  SELECT city, COUNT(*) AS cnt, AVG(marks) AS avg_marks FROM Students GROUP BY city\n),\nbig_cities AS (\n  SELECT city FROM city_stats WHERE cnt > 1\n)\nSELECT * FROM big_cities;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "cte_basic",
+      "prompt": "Using a CTE of per-city average marks, select cities with average marks below 70.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Bangalore", "avg_marks": 55 }
+      ]
+    },
+    {
+      "id": "cte_join",
+      "prompt": "Using a CTE, join each student to their city's average marks, and select students who scored above their city's average.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya", "marks": 85, "avg_marks": 75 },
+        { "name": "Aditya", "marks": 78, "avg_marks": 77 },
+        { "name": "Sneha", "marks": 91, "avg_marks": 77 }
+      ]
+    },
+    {
+      "id": "cte_chained",
+      "prompt": "Using two chained CTEs, first compute per-city student counts, then select only cities with more than 2 students, returning just the city names.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Delhi" },
+        { "city": "Kolkata" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "topic_id": "window-functions",
+  "title": "Window Functions (OVER & PARTITION BY)",
+  "order": 28,
+  "theory": {
+    "concept": "A window function computes a value across a set of related rows without collapsing them into a single output row, unlike GROUP BY.\n\n- OVER() defines the window — the set of rows the function considers for each row\n- PARTITION BY divides rows into groups for the function to operate within, similar to GROUP BY, but every original row still appears in the output\n- Without PARTITION BY, the function treats the entire result set as one window\n- This topic covers the core mechanism; specific function types (ranking, LAG/LEAD, running totals) are covered in the next few topics",
+    "syntax": "SELECT columns, AGG_FUNC(column) OVER (PARTITION BY column) AS alias FROM table_name;",
+    "example": {
+      "query": "-- 1. City average shown alongside every row, without collapsing\nSELECT name, city, marks, AVG(marks) OVER (PARTITION BY city) AS city_avg FROM Students;\n\n-- 2. Overall total shown next to every row\nSELECT name, marks, SUM(marks) OVER () AS total_marks FROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "window_max",
+      "prompt": "For each student, show their marks alongside the maximum marks in their city, without using GROUP BY.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata", "marks": 78, "city_max": 91 },
+        { "name": "Priya", "city": "Delhi", "marks": 85, "city_max": 85 },
+        { "name": "Rohan", "city": "Kolkata", "marks": 62, "city_max": 91 },
+        { "name": "Sneha", "city": "Kolkata", "marks": 91, "city_max": 91 },
+        { "name": "Karan", "city": "Bangalore", "marks": 55, "city_max": 55 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73, "city_max": 85 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88, "city_max": 88 },
+        { "name": "Meera", "city": "Delhi", "marks": 67, "city_max": 85 }
+      ]
+    },
+    {
+      "id": "window_count",
+      "prompt": "For each student, show how many students are in their city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata", "city_count": 3 },
+        { "name": "Priya", "city": "Delhi", "city_count": 3 },
+        { "name": "Rohan", "city": "Kolkata", "city_count": 3 },
+        { "name": "Sneha", "city": "Kolkata", "city_count": 3 },
+        { "name": "Karan", "city": "Bangalore", "city_count": 1 },
+        { "name": "Anjali", "city": "Delhi", "city_count": 3 },
+        { "name": "Vikram", "city": "Chennai", "city_count": 1 },
+        { "name": "Meera", "city": "Delhi", "city_count": 3 }
+      ]
+    },
+    {
+      "id": "window_diff",
+      "prompt": "For each student, show the difference between their marks and their city's average marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata", "marks": 78, "diff_from_city_avg": 1 },
+        { "name": "Priya", "city": "Delhi", "marks": 85, "diff_from_city_avg": 10 },
+        { "name": "Rohan", "city": "Kolkata", "marks": 62, "diff_from_city_avg": -15 },
+        { "name": "Sneha", "city": "Kolkata", "marks": 91, "diff_from_city_avg": 14 },
+        { "name": "Karan", "city": "Bangalore", "marks": 55, "diff_from_city_avg": 0 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73, "diff_from_city_avg": -2 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88, "diff_from_city_avg": 0 },
+        { "name": "Meera", "city": "Delhi", "marks": 67, "diff_from_city_avg": -8 }
+      ]
+    }
+  ]
+}
