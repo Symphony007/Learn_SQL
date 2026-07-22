@@ -37,11 +37,20 @@ export default function AuthModal({ isOpen, onClose, initialMode }: AuthModalPro
 
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
+        
+        // Supabase returns an empty identities array if the user already exists
+        // (this is a security feature to prevent email enumeration).
+        if (data?.user?.identities != null && data.user.identities.length === 0) {
+          setError("An account with this email already exists. Please log in instead.");
+          setSuccessMsg(null);
+          return;
+        }
+
         setSuccessMsg("Check your email for the confirmation link.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
