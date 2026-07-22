@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QueryLab
+
+QueryLab is an interactive, browser-based SQL learning platform designed for software engineers and data professionals. It features a fully client-side SQL execution environment using WebAssembly (sql.js), allowing users to practice against real databases with instant feedback and no server latency.
+
+## Features
+
+- **Live SQL Execution**: Run real queries in the browser instantly with sql.js.
+- **Structured Curriculum**: A 34-topic roadmap guiding learners from basic `SELECT` statements to advanced analytical window functions and recursive CTEs.
+- **Premium Developer Aesthetic**: A polished UI inspired by top-tier developer tools, with full support for Light and Dark modes.
+- **Syntax Highlighting**: Custom Monaco editor integration with real-time SQL syntax validation and autocomplete.
+- **Progress Tracking**: Seamless integration with Supabase to track solved exercises and preserve your learning state across devices.
+
+## Tech Stack
+
+- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **SQL Engine**: [sql.js](https://sql.js.org/) (SQLite compiled to WebAssembly)
+- **Editor**: [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+- **Auth & Database**: [Supabase](https://supabase.com/)
 
 ## Getting Started
 
-First, run the development server:
+First, ensure you have set up your `.env.local` with the required Supabase credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then, run the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-## Learn More
+## Content Management
 
-To learn more about Next.js, take a look at the following resources:
+The curriculum content is completely detached from the application logic. All topics, theory, schemas, and questions are stored as JSON files within the `content/topics/` directory.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To add a new topic or exercise:
+1. Create or modify a JSON file in `content/topics/`.
+2. Adhere to the `Topic` schema (defined in `src/lib/types.ts`).
+3. The platform will automatically load and render the new content.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -253,9 +253,8 @@ export default function TopicPageClient({ topic }: TopicPageClientProps) {
       <footer className="border-t border-border bg-background py-10 mt-12">
         <div className="max-w-4xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3 opacity-60">
-            <div className="w-6 h-6 rounded bg-border text-text-secondary flex items-center justify-center font-bold text-[10px]">
-              QL
-            </div>
+            <img src="/logo-light.svg" alt="QueryLab" className="h-6 w-auto block dark:hidden opacity-50 grayscale" />
+            <img src="/logo-dark.svg" alt="QueryLab" className="h-6 w-auto hidden dark:block opacity-50 grayscale" />
             <span className="text-xs font-medium text-text-secondary tracking-widest uppercase">QueryLab</span>
           </div>
           <p className="text-text-secondary text-xs font-medium opacity-60">No fluff, just practice.</p>

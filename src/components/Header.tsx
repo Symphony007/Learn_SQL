@@ -28,15 +28,13 @@ export default function Header() {
       <header className="border-b border-border bg-surface sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-lg">
-              <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                QL
-              </div>
-              <span className="font-semibold tracking-tight text-text-primary">QueryLab</span>
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-lg">
+              <img src="/logo-light.svg" alt="QueryLab" className="h-30 w-auto block dark:hidden" />
+              <img src="/logo-dark.svg" alt="QueryLab" className="h-30 w-auto hidden dark:block" />
             </Link>
           </div>
           <nav className="flex items-center gap-6">
-            <Link 
+            <Link
               href="/roadmap"
               className={`text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-md px-1 ${pathname === '/roadmap' ? 'text-primary' : 'text-text-secondary hover:text-primary-hover'}`}
             >

@@ -17,6 +17,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "QueryLab",
   description: "Client-side SQL query runner for learning SQL",
+  icons: [
+    {
+      media: "(prefers-color-scheme: light)",
+      url: "/favicon_light.png",
+      href: "/favicon_light.png",
+    },
+    {
+      media: "(prefers-color-scheme: dark)",
+      url: "/favicon_dark.png",
+      href: "/favicon_dark.png",
+    },
+  ],
 };
 
 export default function RootLayout({
