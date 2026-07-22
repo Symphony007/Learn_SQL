@@ -1,0 +1,79 @@
+{
+  "topic_id": "subqueries-in-where",
+  "title": "Subqueries in WHERE (IN, EXISTS, ANY, ALL)",
+  "order": 23,
+  "theory": {
+    "concept": "A subquery in WHERE can return more than one value — instead of comparing to a single number, you check membership or existence against a whole set of results.\n\n- IN (subquery) checks if a value matches any value in the subquery's result set\n- EXISTS (subquery) checks whether the subquery returns any rows at all — it doesn't care about the actual values, just whether at least one row comes back, which often makes it faster than IN for large sets\n- ANY compares a value against a set using a comparison operator (> ANY, = ANY, etc.) — true if the comparison holds for at least one value in the set\n- ALL is similar but requires the comparison to hold for every value in the set\n- NOT IN has the NULL gotcha covered back in Topic 5 — if the subquery's result set contains a NULL, NOT IN can silently return zero rows. NOT EXISTS doesn't have this problem and is the safer choice for \"not in\" style logic",
+    "syntax": "SELECT columns FROM table_name WHERE column_name IN (SELECT column_name FROM other_table);\n\nSELECT columns FROM table_name AS t WHERE EXISTS (SELECT 1 FROM other_table WHERE condition);\n\nSELECT columns FROM table_name WHERE column_name > ANY (SELECT column_name FROM other_table);",
+    "example": {
+      "query": "-- 1. IN with a subquery\nSELECT name FROM Students WHERE id IN (SELECT student_id FROM Enrollments WHERE course = 'DBMS');\n\n-- 2. EXISTS checking for any enrollment at all\nSELECT s.name FROM Students AS s WHERE EXISTS (SELECT 1 FROM Enrollments AS e WHERE e.student_id = s.id);"
+    }
+  },
+  "shared_table": [
+    {
+      "name": "Students",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "name", "type": "TEXT" },
+        { "name": "age", "type": "INTEGER" },
+        { "name": "city", "type": "TEXT" },
+        { "name": "marks", "type": "INTEGER" }
+      ],
+      "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+      "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+    },
+    {
+      "name": "Enrollments",
+      "columns": [
+        { "name": "id", "type": "INTEGER" },
+        { "name": "student_id", "type": "INTEGER" },
+        { "name": "course", "type": "TEXT" }
+      ],
+      "create_sql": "CREATE TABLE Enrollments (\n  id INTEGER PRIMARY KEY,\n  student_id INTEGER,\n  course TEXT\n);",
+      "insert_sql": "INSERT INTO Enrollments (id, student_id, course) VALUES\n(1, 1, 'DBMS'),\n(2, 1, 'Networks'),\n(3, 2, 'DBMS'),\n(4, 4, 'OS'),\n(5, 5, 'DBMS');"
+    }
+  ],
+  "questions": [
+    {
+      "id": "not_exists",
+      "prompt": "Select the names of students who are NOT enrolled in any course, using NOT EXISTS.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Rohan" },
+        { "name": "Anjali" },
+        { "name": "Vikram" },
+        { "name": "Meera" }
+      ]
+    },
+    {
+      "id": "in_subquery",
+      "prompt": "Select the names of students enrolled in 'Networks' or 'OS', using IN.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Sneha" }
+      ]
+    },
+    {
+      "id": "any_subquery",
+      "prompt": "Select the names of students whose marks are greater than ANY of the marks of students enrolled in 'DBMS'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya" },
+        { "name": "Sneha" },
+        { "name": "Anjali" },
+        { "name": "Vikram" },
+        { "name": "Meera" }
+      ]
+    },
+    {
+      "id": "all_subquery",
+      "prompt": "Select the names of students whose marks are greater than ALL of the marks of students enrolled in 'DBMS'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Sneha" },
+        { "name": "Vikram" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "topic_id": "correlated-subqueries",
+  "title": "Correlated Subqueries",
+  "order": 24,
+  "theory": {
+    "concept": "A correlated subquery references a column from the outer query — meaning it can't run on its own, it has to be re-evaluated once for every row the outer query considers.\n\n- The key difference from a regular subquery: a regular subquery runs once, produces a result, and the outer query uses it; a correlated subquery runs once per row of the outer query, because its condition depends on that row's values\n- Recognizable by the subquery referencing the outer query's table/alias inside its own WHERE clause\n- Common pattern: \"find rows that are the maximum/minimum within their own group\" without using GROUP BY\n- Because it re-runs per row, correlated subqueries can be slower than joins on large tables — but they're often the clearest way to express \"compare this row to others like it\"",
+    "syntax": "SELECT columns FROM table_name AS outer_alias\nWHERE column_name > (SELECT AGG_FUNC(column_name) FROM table_name AS inner_alias WHERE inner_alias.group_column = outer_alias.group_column);",
+    "example": {
+      "query": "-- 1. Finding students who scored above their own city's average\nSELECT s1.name, s1.city, s1.marks FROM Students AS s1\nWHERE s1.marks > (SELECT AVG(s2.marks) FROM Students AS s2 WHERE s2.city = s1.city);\n\n-- 2. Finding the highest scorer within each city using a correlated subquery\nSELECT s1.name, s1.city, s1.marks FROM Students AS s1\nWHERE s1.marks = (SELECT MAX(s2.marks) FROM Students AS s2 WHERE s2.city = s1.city);"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "correlated_avg",
+      "prompt": "Select the names of students who scored below their own city's average marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Rohan" },
+        { "name": "Meera" }
+      ]
+    },
+    {
+      "id": "correlated_min",
+      "prompt": "Select the name, city, and marks of the student with the lowest marks in each city.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Rohan", "city": "Kolkata", "marks": 62 },
+        { "name": "Meera", "city": "Delhi", "marks": 67 },
+        { "name": "Karan", "city": "Bangalore", "marks": 55 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88 }
+      ]
+    },
+    {
+      "id": "correlated_not_exists",
+      "prompt": "Select the names of students whose marks are strictly higher than every other student in the same city (i.e. the unique top scorer, excluding cities with a tie at the top).",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Sneha", "city": "Kolkata" },
+        { "name": "Priya", "city": "Delhi" },
+        { "name": "Karan", "city": "Bangalore" },
+        { "name": "Vikram", "city": "Chennai" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "topic_id": "derived-tables",
+  "title": "Derived Tables (Subqueries in FROM)",
+  "order": 25,
+  "theory": {
+    "concept": "A derived table is a subquery placed in the FROM clause — its result is treated as if it were a real table for the rest of the query to select from, filter, or join against.\n\n- Must be given an alias — most SQL engines require this, since the \"table\" has no name of its own\n- Useful for breaking a complex problem into stages: first compute something (like per-group aggregates), then filter or join on top of that computed result\n- Unlike a correlated subquery, a derived table runs once, independently, before the outer query touches it — closer in spirit to a regular subquery than a correlated one\n- You can join a derived table to a real table, or even to another derived table",
+    "syntax": "SELECT outer_columns FROM (\n  SELECT columns FROM table_name GROUP BY column_name\n) AS derived_alias\nWHERE condition;",
+    "example": {
+      "query": "-- 1. Filtering on top of a pre-aggregated derived table\nSELECT * FROM (\n  SELECT city, AVG(marks) AS avg_marks FROM Students GROUP BY city\n) AS city_avg\nWHERE avg_marks > 70;\n\n-- 2. Joining a derived table back to the original table\nSELECT s.name, s.marks, city_avg.avg_marks FROM Students AS s\nJOIN (SELECT city, AVG(marks) AS avg_marks FROM Students GROUP BY city) AS city_avg\nON s.city = city_avg.city;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "derived_filter",
+      "prompt": "Using a derived table of per-city student counts, select cities with more than 2 students.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "city": "Delhi", "student_count": 3 },
+        { "city": "Kolkata", "student_count": 3 }
+      ]
+    },
+    {
+      "id": "derived_join",
+      "prompt": "Join a derived table of each city's maximum marks back to Students, to list every student alongside their city's top score.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata", "marks": 78, "max_marks": 91 },
+        { "name": "Priya", "city": "Delhi", "marks": 85, "max_marks": 85 },
+        { "name": "Rohan", "city": "Kolkata", "marks": 62, "max_marks": 91 },
+        { "name": "Sneha", "city": "Kolkata", "marks": 91, "max_marks": 91 },
+        { "name": "Karan", "city": "Bangalore", "marks": 55, "max_marks": 55 },
+        { "name": "Anjali", "city": "Delhi", "marks": 73, "max_marks": 85 },
+        { "name": "Vikram", "city": "Chennai", "marks": 88, "max_marks": 88 },
+        { "name": "Meera", "city": "Delhi", "marks": 67, "max_marks": 85 }
+      ]
+    },
+    {
+      "id": "derived_top_scorer",
+      "prompt": "Using the joined result from Q2 as a basis, select only the students whose marks equal their city's maximum (i.e. the top scorer per city).",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Priya", "city": "Delhi" },
+        { "name": "Sneha", "city": "Kolkata" },
+        { "name": "Karan", "city": "Bangalore" },
+        { "name": "Vikram", "city": "Chennai" }
+      ]
+    }
+  ]
+}

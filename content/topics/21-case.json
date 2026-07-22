@@ -1,0 +1,81 @@
+{
+  "topic_id": "case",
+  "title": "Conditional Logic with CASE",
+  "order": 21,
+  "theory": {
+    "concept": "CASE lets you add if/else logic directly inside a query, returning different values depending on a condition.\n\n- Works like a series of if/else-if checks — conditions are evaluated in order, and the first one that's true wins\n- Can be used inside SELECT (to create a computed column), inside ORDER BY, or inside WHERE/HAVING\n- Always include an ELSE — without it, rows that match none of the conditions return NULL, which can be surprising if unintended\n- Two forms exist: \"simple CASE\" (compares one column to fixed values) and \"searched CASE\" (each branch has its own full condition) — the searched form shown below is more flexible and more commonly used",
+    "syntax": "SELECT column1,\n  CASE\n    WHEN condition1 THEN result1\n    WHEN condition2 THEN result2\n    ELSE default_result\n  END AS alias_name\nFROM table_name;",
+    "example": {
+      "query": "-- 1. Categorizing marks into a grade band\nSELECT name, marks,\n  CASE\n    WHEN marks >= 85 THEN 'A'\n    WHEN marks >= 70 THEN 'B'\n    ELSE 'C'\n  END AS grade\nFROM Students;\n\n-- 2. Using CASE inside an aggregate to count conditionally\nSELECT\n  SUM(CASE WHEN city = 'Delhi' THEN 1 ELSE 0 END) AS delhi_count\nFROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "case_pass_fail",
+      "prompt": "Label each student as 'Pass' if marks are 60 or above, otherwise 'Fail'.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "marks": 78, "status": "Pass" },
+        { "name": "Priya", "marks": 85, "status": "Pass" },
+        { "name": "Rohan", "marks": 62, "status": "Pass" },
+        { "name": "Sneha", "marks": 91, "status": "Pass" },
+        { "name": "Karan", "marks": 55, "status": "Fail" },
+        { "name": "Anjali", "marks": 73, "status": "Pass" },
+        { "name": "Vikram", "marks": 88, "status": "Pass" },
+        { "name": "Meera", "marks": 67, "status": "Pass" }
+      ]
+    },
+    {
+      "id": "case_age_group",
+      "prompt": "Label each student's age group as 'Young' (under 21), 'Mid' (21-22), or 'Senior' (above 22).",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "age": 21, "age_group": "Mid" },
+        { "name": "Priya", "age": 22, "age_group": "Mid" },
+        { "name": "Rohan", "age": 21, "age_group": "Mid" },
+        { "name": "Sneha", "age": 23, "age_group": "Senior" },
+        { "name": "Karan", "age": 21, "age_group": "Mid" },
+        { "name": "Anjali", "age": 22, "age_group": "Mid" },
+        { "name": "Vikram", "age": 20, "age_group": "Young" },
+        { "name": "Meera", "age": 22, "age_group": "Mid" }
+      ]
+    },
+    {
+      "id": "case_group_by",
+      "prompt": "Count how many students fall into each grade band: 'A' (85+), 'B' (70-84), 'C' (below 70).",
+      "order_sensitive": false,
+      "expected_result": [
+        { "grade": "A", "COUNT(*)": 3 },
+        { "grade": "B", "COUNT(*)": 2 },
+        { "grade": "C", "COUNT(*)": 3 }
+      ]
+    },
+    {
+      "id": "case_order_by",
+      "prompt": "Select the names of students, sorted so that students from 'Kolkata' appear first, followed by everyone else alphabetically by name.",
+      "order_sensitive": true,
+      "expected_result": [
+        { "name": "Aditya", "city": "Kolkata" },
+        { "name": "Rohan", "city": "Kolkata" },
+        { "name": "Sneha", "city": "Kolkata" },
+        { "name": "Anjali", "city": "Delhi" },
+        { "name": "Karan", "city": "Bangalore" },
+        { "name": "Meera", "city": "Delhi" },
+        { "name": "Priya", "city": "Delhi" },
+        { "name": "Vikram", "city": "Chennai" }
+      ]
+    }
+  ]
+}

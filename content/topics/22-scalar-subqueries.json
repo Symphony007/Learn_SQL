@@ -1,0 +1,61 @@
+{
+  "topic_id": "scalar-subqueries",
+  "title": "Scalar Subqueries",
+  "order": 22,
+  "theory": {
+    "concept": "A scalar subquery is a query nested inside another query that returns exactly one value — a single row, single column — which can then be used anywhere a single value is expected.\n\n- Must return exactly one row and one column, or the query errors at runtime\n- Common use: comparing a column to an aggregate computed from the same or a different table, like \"students who scored above the average\"\n- Can appear in SELECT (as a computed column), WHERE, or HAVING\n- The subquery runs first (conceptually), producing one number, which the outer query then uses like a constant",
+    "syntax": "SELECT columns FROM table_name WHERE column_name > (SELECT AGG_FUNC(column_name) FROM table_name);",
+    "example": {
+      "query": "-- 1. Comparing to the overall average\nSELECT name, marks FROM Students WHERE marks > (SELECT AVG(marks) FROM Students);\n\n-- 2. Using a scalar subquery as a computed column\nSELECT name, marks, (SELECT MAX(marks) FROM Students) AS top_score FROM Students;"
+    }
+  },
+  "shared_table": {
+    "name": "Students",
+    "columns": [
+      { "name": "id", "type": "INTEGER" },
+      { "name": "name", "type": "TEXT" },
+      { "name": "age", "type": "INTEGER" },
+      { "name": "city", "type": "TEXT" },
+      { "name": "marks", "type": "INTEGER" }
+    ],
+    "create_sql": "CREATE TABLE Students (\n  id INTEGER PRIMARY KEY,\n  name TEXT,\n  age INTEGER,\n  city TEXT,\n  marks INTEGER\n);",
+    "insert_sql": "INSERT INTO Students (id, name, age, city, marks) VALUES\n(1, 'Aditya', 21, 'Kolkata', 78),\n(2, 'Priya', 22, 'Delhi', 85),\n(3, 'Rohan', 21, 'Kolkata', 62),\n(4, 'Sneha', 23, 'Kolkata', 91),\n(5, 'Karan', 21, 'Bangalore', 55),\n(6, 'Anjali', 22, 'Delhi', 73),\n(7, 'Vikram', 20, 'Chennai', 88),\n(8, 'Meera', 22, 'Delhi', 67);"
+  },
+  "questions": [
+    {
+      "id": "scalar_where",
+      "prompt": "Select the names of students who scored below the average marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya" },
+        { "name": "Rohan" },
+        { "name": "Karan" },
+        { "name": "Anjali" },
+        { "name": "Meera" }
+      ]
+    },
+    {
+      "id": "scalar_where_eq",
+      "prompt": "Select the name and marks of the student(s) who scored the same as the maximum marks.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Sneha", "marks": 91 }
+      ]
+    },
+    {
+      "id": "scalar_select",
+      "prompt": "Select each student's name, marks, and how far above or below the average their marks are.",
+      "order_sensitive": false,
+      "expected_result": [
+        { "name": "Aditya", "marks": 78, "diff_from_avg": -1.125 },
+        { "name": "Priya", "marks": 85, "diff_from_avg": 5.875 },
+        { "name": "Rohan", "marks": 62, "diff_from_avg": -17.125 },
+        { "name": "Sneha", "marks": 91, "diff_from_avg": 11.875 },
+        { "name": "Karan", "marks": 55, "diff_from_avg": -24.125 },
+        { "name": "Anjali", "marks": 73, "diff_from_avg": -6.125 },
+        { "name": "Vikram", "marks": 88, "diff_from_avg": 8.875 },
+        { "name": "Meera", "marks": 67, "diff_from_avg": -12.125 }
+      ]
+    }
+  ]
+}
