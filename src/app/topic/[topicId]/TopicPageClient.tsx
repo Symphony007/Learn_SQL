@@ -24,17 +24,21 @@ function getTablesForQuestion(topic: Topic, questionIndex: number): TableFixture
 }
 
 function renderConcept(concept: string) {
-  const parts = concept.split('\n• ');
+  // Normalize bullet markers (- , • , *) to \n• so we can split reliably
+  let normalized = concept.replace(/(?:^|\n)\s*[-•*]\s+/g, '\n• ');
+  
+  if (normalized.startsWith('\n• ')) {
+    normalized = normalized.substring(1);
+  }
+  
+  const parts = normalized.split('\n• ');
   let intro = '';
   let bullets: string[] = [];
 
-  if (parts.length === 1) {
-    const parts2 = concept.split('• ');
-    if (parts2.length === 1) {
-      return <p className="text-lg text-text-primary leading-relaxed font-medium">{concept}</p>;
-    }
-    intro = parts2[0].trim();
-    bullets = parts2.slice(1);
+  if (parts.length === 1 && parts[0].startsWith('• ')) {
+    bullets = [parts[0].substring(2).trim()];
+  } else if (parts.length === 1) {
+    return <p className="text-lg text-text-primary leading-relaxed font-medium whitespace-pre-line">{concept}</p>;
   } else {
     intro = parts[0].trim();
     bullets = parts.slice(1);
@@ -42,15 +46,17 @@ function renderConcept(concept: string) {
 
   return (
     <div className="flex flex-col gap-6">
-      {intro && <p className="text-xl text-text-primary leading-relaxed font-medium tracking-tight">{intro}</p>}
-      <ul className="flex flex-col gap-3">
-        {bullets.map((b, i) => (
-          <li key={i} className="flex items-start gap-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-text-secondary shrink-0 mt-2.5"></span>
-            <span className="text-lg text-text-secondary leading-relaxed">{b.trim()}</span>
-          </li>
-        ))}
-      </ul>
+      {intro && <p className="text-xl text-text-primary leading-relaxed font-medium tracking-tight whitespace-pre-line">{intro}</p>}
+      {bullets.length > 0 && (
+        <ul className="flex flex-col gap-3">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex items-start gap-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-text-secondary shrink-0 mt-2.5"></span>
+              <span className="text-lg text-text-secondary leading-relaxed whitespace-pre-line">{b.trim()}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
