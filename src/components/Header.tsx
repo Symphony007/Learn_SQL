@@ -6,6 +6,7 @@ import { useAuth } from "./AuthProvider";
 import { useState } from "react";
 import AuthModal from "./AuthModal";
 import { supabase } from "@/lib/supabaseClient";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header() {
   const { user, loading } = useAuth();
@@ -24,37 +25,38 @@ export default function Header() {
 
   return (
     <>
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
+      <header className="border-b border-border bg-surface sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-lg">
+              <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">
                 QL
               </div>
-              <span className="font-semibold tracking-tight text-slate-900">QueryLab</span>
+              <span className="font-semibold tracking-tight text-text-primary">QueryLab</span>
             </Link>
           </div>
           <nav className="flex items-center gap-6">
             <Link 
               href="/roadmap"
-              className={`text-sm font-medium transition-colors ${pathname === '/roadmap' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}
+              className={`text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-md px-1 ${pathname === '/roadmap' ? 'text-primary' : 'text-text-secondary hover:text-primary-hover'}`}
             >
               Curriculum
             </Link>
+            <ThemeToggle />
             {!loading && (
               user ? (
-                <div className="flex items-center gap-4 pl-6 border-l border-slate-200">
-                  <span className="text-sm font-medium text-slate-700">{user.email}</span>
-                  <button onClick={handleLogout} className="text-sm font-medium text-slate-600 hover:text-red-600 transition-colors">
+                <div className="flex items-center gap-4 pl-6 border-l border-border">
+                  <span className="text-sm font-medium text-text-primary">{user.email}</span>
+                  <button onClick={handleLogout} className="text-sm font-medium text-text-secondary hover:text-error transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-md px-1">
                     Log Out
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-4 pl-6 border-l border-slate-200">
-                  <button onClick={() => handleOpenAuth("login")} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">
+                <div className="flex items-center gap-4 pl-6 border-l border-border">
+                  <button onClick={() => handleOpenAuth("login")} className="text-sm font-medium text-text-secondary hover:text-primary-hover transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring rounded-md px-1">
                     Log In
                   </button>
-                  <button onClick={() => handleOpenAuth("signup")} className="text-sm font-medium bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                  <button onClick={() => handleOpenAuth("signup")} className="text-sm font-medium bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-hover transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-focus-ring">
                     Sign Up
                   </button>
                 </div>

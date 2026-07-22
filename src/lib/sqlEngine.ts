@@ -7,18 +7,22 @@
 
 import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 
-let SQL: SqlJsStatic | null = null;
+let sqlPromise: Promise<SqlJsStatic> | null = null;
 
 /**
  * Loads the sql.js WASM runtime once and caches the result.
  * The wasm file is served from /public/sql-wasm.wasm.
  */
-export async function getSqlJs(): Promise<SqlJsStatic> {
-  if (SQL) return SQL;
-  SQL = await initSqlJs({
-    locateFile: (file: string) => `/${file}`,
-  });
-  return SQL;
+export function getSqlJs(): Promise<SqlJsStatic> {
+  if (!sqlPromise) {
+    sqlPromise = initSqlJs({
+      locateFile: (file: string) => `/${file}`,
+    }).catch(err => {
+      sqlPromise = null;
+      throw err;
+    });
+  }
+  return sqlPromise;
 }
 
 /**
@@ -26,10 +30,14 @@ export async function getSqlJs(): Promise<SqlJsStatic> {
  * (typically CREATE TABLE + INSERT statements).
  */
 export async function createDatabase(setupSql: string): Promise<Database> {
-  const sqlJs = await getSqlJs();
-  const db = new sqlJs.Database();
-  db.run(setupSql);
-  return db;
+  try {
+    const sqlJs = await getSqlJs();
+    const db = new sqlJs.Database();
+    db.run(setupSql);
+    return db;
+  } catch (err) {
+    throw err instanceof Error ? err : new Error(String(err));
+  }
 }
 
 export type QueryResult = {
@@ -45,20 +53,24 @@ export type QueryResult = {
  * to `formatSqlError()` for user-friendly messages.
  */
 export function runQuery(db: Database, query: string): QueryResult {
-  const results = db.exec(query);
+  try {
+    const results = db.exec(query);
 
-  if (results.length === 0) {
-    return { columns: [], rows: [] };
-  }
+    if (results.length === 0) {
+      return { columns: [], rows: [] };
+    }
 
-  const { columns, values } = results[0];
-  const rows = values.map((row) => {
-    const rowObj: Record<string, unknown> = {};
-    columns.forEach((col, i) => {
-      rowObj[col] = row[i];
+    const { columns, values } = results[0];
+    const rows = values.map((row) => {
+      const rowObj: Record<string, unknown> = {};
+      columns.forEach((col, i) => {
+        rowObj[col] = row[i];
+      });
+      return rowObj;
     });
-    return rowObj;
-  });
 
-  return { columns, rows };
+    return { columns, rows };
+  } catch (err) {
+    throw err instanceof Error ? err : new Error(String(err));
+  }
 }

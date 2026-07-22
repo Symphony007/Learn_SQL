@@ -9,6 +9,7 @@ import { diffResults, DiffResult } from "@/lib/resultDiffer";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabaseClient";
+import { useTheme } from "next-themes";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Props
@@ -38,6 +39,7 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
   const [sampleData, setSampleData] = useState<Record<string, QueryResult>>({});
   const monaco = useMonaco();
   const [editorInstance, setEditorInstance] = useState<any>(null);
+  const { resolvedTheme } = useTheme();
 
   // Derive known names from the fixture tables for error formatting
   const knownTableNames = tables.map((t) => t.name);
@@ -129,7 +131,7 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
         setIsRunning(false);
       }
     }, 50);
-  }, [queryText, question.expected_result, question.order_sensitive, knownTableNames, knownColumnNames]);
+  }, [queryText, question.expected_result, question.order_sensitive, knownTableNames, knownColumnNames, user, onSolve]);
 
   // ── Keyboard shortcut (Ctrl/Cmd + Enter) ──────────────────────────────
   useEffect(() => {
@@ -243,14 +245,14 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
     <div className="flex flex-col gap-6">
       {/* WASM init error */}
       {dbError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 text-sm font-mono">
+        <div className="rounded-xl border border-error bg-error/10 p-4 text-error text-sm font-mono">
           {dbError}
         </div>
       )}
 
       {/* ── Schema viewer ──────────────────────────────────────────── */}
       <section>
-        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
+        <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">
           Database Tables
         </h3>
         <div className="grid gap-4">
@@ -260,12 +262,12 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
             return (
               <div
                 key={table.name}
-                className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm"
+                className="rounded-xl border border-border bg-surface overflow-hidden shadow-sm"
               >
-                <div className="px-4 py-2 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <div className="px-4 py-2 border-b border-border bg-code-bg flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="inline-block w-2 h-2 rounded-full bg-teal-500" />
-                    <span className="font-mono text-sm font-semibold text-slate-700">{table.name}</span>
+                    <span className="inline-block w-2 h-2 rounded-full bg-secondary" />
+                    <span className="font-mono text-sm font-semibold text-text-primary">{table.name}</span>
                   </div>
                 </div>
                 
@@ -273,24 +275,24 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
                   {sample ? (
                     <table className="w-full text-sm text-left">
                       <thead className="sticky top-0 z-10">
-                        <tr className="border-b border-slate-200 bg-slate-100/90 backdrop-blur-sm">
+                        <tr className="border-b border-border bg-border/50 backdrop-blur-sm">
                           {sample.columns.map((col) => (
                             <th
                               key={col}
-                              className="px-4 py-2 font-mono text-xs font-semibold text-slate-500 bg-slate-50/50"
+                              className="px-4 py-2 font-mono text-xs font-semibold text-text-secondary bg-code-bg/50"
                             >
                               {col}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="font-mono text-sm text-slate-700 divide-y divide-slate-100">
+                      <tbody className="font-mono text-sm text-text-primary divide-y divide-border">
                         {sample.rows.map((row, i) => (
-                          <tr key={i} className="hover:bg-slate-50 transition-colors">
+                          <tr key={i} className="hover:bg-code-bg transition-colors">
                             {sample.columns.map((col) => (
                               <td key={col} className="px-4 py-2 whitespace-nowrap">
                                 {row[col] === null ? (
-                                  <span className="text-slate-400 italic">NULL</span>
+                                  <span className="text-text-secondary italic">NULL</span>
                                 ) : (
                                   String(row[col])
                                 )}
@@ -300,7 +302,7 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
                         ))}
                         {sample.rows.length === 0 && (
                           <tr>
-                            <td colSpan={sample.columns.length} className="px-4 py-3 text-slate-400 italic text-center">
+                            <td colSpan={sample.columns.length} className="px-4 py-3 text-text-secondary italic text-center">
                               Table is empty
                             </td>
                           </tr>
@@ -308,7 +310,7 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
                       </tbody>
                     </table>
                   ) : (
-                    <div className="px-4 py-4 text-xs text-slate-400 text-center animate-pulse">
+                    <div className="px-4 py-4 text-xs text-text-secondary text-center animate-pulse">
                       Loading data...
                     </div>
                   )}
@@ -320,15 +322,15 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
       </section>
 
       {/* ── Monaco Editor ──────────────────────────────────────────── */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm mt-2">
-        <div className="px-4 py-2 border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500 flex items-center justify-between">
+      <div className="rounded-xl border border-border bg-surface overflow-hidden shadow-sm mt-2">
+        <div className="px-4 py-2 border-b border-border bg-code-bg text-xs font-medium text-text-secondary flex items-center justify-between">
           <span className="uppercase tracking-wider">SQL Editor</span>
-          <span className="text-slate-400">Ctrl + Enter to run</span>
+          <span className="text-text-secondary">Ctrl + Enter to run</span>
         </div>
         <Editor
           height="180px"
           defaultLanguage="sql"
-          theme="light"
+          theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
           value={queryText}
           onChange={(value) => setQueryText(value ?? "")}
           onMount={(editor) => setEditorInstance(editor)}
@@ -354,14 +356,14 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
           onClick={handleRun}
           disabled={!dbReady || isRunning}
           className="px-6 py-2.5 rounded-lg font-medium text-sm transition-all
-            bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white
-            disabled:opacity-50 disabled:cursor-not-allowed
-            shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30
+            bg-primary hover:bg-primary-hover active:scale-95 text-surface
+            disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-focus-ring
+            shadow-md shadow-primary/20 hover:shadow-primary/30
             cursor-pointer flex items-center gap-2"
         >
           {isRunning ? (
             <>
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              <span className="w-4 h-4 border-2 border-surface/30 border-t-surface rounded-full animate-spin"></span>
               Running...
             </>
           ) : (
@@ -374,7 +376,7 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
           )}
         </button>
         {!dbReady && !dbError && (
-          <span className="text-sm font-medium text-slate-400 animate-pulse">
+          <span className="text-sm font-medium text-text-secondary animate-pulse">
             Loading sql.js...
           </span>
         )}
@@ -382,17 +384,17 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
 
       {/* ── Result panel ───────────────────────────────────────────── */}
       {(result || error) && (
-        <section className="mt-4 border-t border-slate-100 pt-6">
-          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
+        <section className="mt-4 border-t border-border pt-6">
+          <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">
             Result
           </h3>
 
           {/* Error display */}
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
-              <p className="text-red-700 text-sm font-medium leading-relaxed mb-1">{error}</p>
+            <div className="rounded-xl border border-error/30 bg-error/10 p-5 shadow-sm">
+              <p className="text-error text-sm font-medium leading-relaxed mb-1">{error}</p>
               {rawError && rawError !== error && (
-                <p className="text-red-500/80 text-xs font-mono mt-3 p-3 bg-white/50 rounded-lg">
+                <p className="text-error/80 text-xs font-mono mt-3 p-3 bg-surface rounded-lg">
                   Raw Error: {rawError}
                 </p>
               )}
@@ -404,37 +406,37 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
             <div className="flex flex-col gap-4">
               {/* Correct badge or diff reason */}
               {diff && diff.match && (
-                <div className="flex items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 px-5 py-3 shadow-sm justify-between">
+                <div className="flex items-center gap-3 rounded-xl border border-secondary/30 bg-secondary/10 px-5 py-3 shadow-sm justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">
+                    <div className="w-6 h-6 rounded-full bg-secondary text-surface flex items-center justify-center font-bold text-sm">
                       ✓
                     </div>
                     <div>
-                      <span className="text-teal-800 font-semibold text-sm block">
+                      <span className="text-secondary-text font-semibold text-sm block">
                         Correct!
                       </span>
-                      <span className="text-teal-600 text-xs block mt-0.5">
+                      <span className="text-secondary-text opacity-80 text-xs block mt-0.5">
                         Output matches expected result.
                       </span>
                     </div>
                   </div>
                   {!user && (
-                    <span className="text-xs text-slate-500 italic">
+                    <span className="text-xs text-text-secondary italic">
                       Log in to save your progress
                     </span>
                   )}
                 </div>
               )}
               {diff && !diff.match && (
-                <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 shadow-sm">
-                  <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm">
+                <div className="flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-5 py-3 shadow-sm">
+                  <div className="w-6 h-6 rounded-full bg-warning text-surface flex items-center justify-center font-bold text-sm">
                     ✗
                   </div>
                   <div>
-                    <span className="text-amber-800 font-semibold text-sm block">
+                    <span className="text-warning font-semibold text-sm block">
                       Not quite
                     </span>
-                    <span className="text-amber-700 text-xs block mt-0.5">
+                    <span className="text-warning opacity-90 text-xs block mt-0.5">
                       {diff.reason}
                     </span>
                   </div>
@@ -443,31 +445,31 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
 
               {/* Result table */}
               {result.columns.length > 0 ? (
-                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                <div className="rounded-xl border border-border bg-surface overflow-hidden shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50">
+                        <tr className="border-b border-border bg-code-bg">
                           {result.columns.map((col) => (
                             <th
                               key={col}
-                              className="px-4 py-3 font-mono text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                              className="px-4 py-3 font-mono text-xs font-semibold text-text-secondary uppercase tracking-wider"
                             >
                               {col}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="font-mono text-sm text-slate-700 divide-y divide-slate-100">
+                      <tbody className="font-mono text-sm text-text-primary divide-y divide-border">
                         {result.rows.map((row, i) => (
                           <tr
                             key={i}
-                            className="hover:bg-slate-50 transition-colors"
+                            className="hover:bg-code-bg transition-colors"
                           >
                             {result.columns.map((col) => (
                               <td key={col} className="px-4 py-2.5 whitespace-nowrap">
                                 {row[col] === null ? (
-                                  <span className="text-slate-400 italic">NULL</span>
+                                  <span className="text-text-secondary italic">NULL</span>
                                 ) : (
                                   String(row[col])
                                 )}
@@ -478,16 +480,16 @@ export default function PracticeScreen({ question, tables, onSolve }: PracticeSc
                       </tbody>
                     </table>
                   </div>
-                  <div className="px-4 py-3 text-xs font-medium text-slate-500 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                  <div className="px-4 py-3 text-xs font-medium text-text-secondary border-t border-border bg-code-bg flex items-center justify-between">
                     <span>
                       {result.rows.length} row{result.rows.length !== 1 ? "s" : ""} returned
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-slate-500 text-sm shadow-sm">
+                <div className="rounded-xl border border-border bg-code-bg px-4 py-8 text-center text-text-secondary text-sm shadow-sm">
                   <span className="block font-medium mb-1">Query executed successfully.</span>
-                  <span className="text-slate-400">No rows were returned.</span>
+                  <span className="text-text-secondary">No rows were returned.</span>
                 </div>
               )}
             </div>
